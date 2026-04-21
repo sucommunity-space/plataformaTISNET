@@ -1,0 +1,116 @@
+services:
+  - type: web
+    name: tisnet-web
+    runtime: python
+    plan: starter
+    region: oregon
+    autoDeployTrigger: commit
+    buildCommand: pip install -r requirements-render.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
+    healthCheckPath: /api/system/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: FLASK_HOST
+        value: 0.0.0.0
+      - key: FLASK_PORT
+        value: 10000
+      - key: FLASK_DEBUG
+        value: "false"
+      - key: ENABLE_DEMO_LOGIN
+        value: "false"
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: OWNER_ADMIN_NAME
+        value: Administrador Principal TISNET
+      - key: OWNER_ADMIN_EMAIL
+        value: admin@tisnet.pe
+      - key: OWNER_ADMIN_PASSWORD
+        sync: false
+      - key: OWNER_ADMIN_COMPANY
+        value: TISNET
+      - key: OWNER_ADMIN_WEBSITE
+        value: https://tisnet.pe
+      - key: OWNER_ADMIN_PHONE
+        value: +51999999999
+      - key: OWNER_SALES_NAME
+        value: Ejecutivo Comercial TISNET
+      - key: OWNER_SALES_EMAIL
+        value: ventas@tisnet.pe
+      - key: OWNER_SALES_PASSWORD
+        sync: false
+      - key: OWNER_SALES_COMPANY
+        value: TISNET
+      - key: OWNER_SALES_WEBSITE
+        value: https://tisnet.pe
+      - key: OWNER_SALES_PHONE
+        value: +51999999999
+      - key: CALENDLY_PUBLIC_URL
+        sync: false
+      - key: CALENDLY_CLIENT_REVIEW_URL
+        sync: false
+      - key: CALENDLY_CLIENT_CLOSE_URL
+        sync: false
+      - key: CALENDLY_PERSONAL_ACCESS_TOKEN
+        sync: false
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_USE_TLS
+        value: "true"
+      - key: SMTP_FROM_EMAIL
+        sync: false
+      - key: SMTP_FROM_NAME
+        value: TISNET
+      - key: MYSQL_HOST
+        fromService:
+          name: tisnet-mysql
+          type: pserv
+          property: host
+      - key: MYSQL_PORT
+        fromService:
+          name: tisnet-mysql
+          type: pserv
+          property: port
+      - key: MYSQL_USER
+        fromService:
+          name: tisnet-mysql
+          type: pserv
+          envVarKey: MYSQL_USER
+      - key: MYSQL_PASSWORD
+        fromService:
+          name: tisnet-mysql
+          type: pserv
+          envVarKey: MYSQL_PASSWORD
+      - key: MYSQL_DATABASE
+        fromService:
+          name: tisnet-mysql
+          type: pserv
+          envVarKey: MYSQL_DATABASE
+
+  - type: pserv
+    name: tisnet-mysql
+    runtime: docker
+    plan: starter
+    region: oregon
+    autoDeployTrigger: commit
+    dockerfilePath: ./deploy/mysql/Dockerfile
+    dockerContext: .
+    disk:
+      name: tisnet-mysql-data
+      mountPath: /var/lib/mysql
+      sizeGB: 10
+    envVars:
+      - key: MYSQL_DATABASE
+        value: tisnet_db
+      - key: MYSQL_USER
+        value: tisnet
+      - key: MYSQL_PASSWORD
+        generateValue: true
+      - key: MYSQL_ROOT_PASSWORD
+        generateValue: true
