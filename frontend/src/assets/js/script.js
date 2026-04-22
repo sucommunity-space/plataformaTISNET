@@ -484,6 +484,7 @@ function bindStaticEvents() {
 
   document.addEventListener('submit', handleDynamicSubmit);
   window.addEventListener('message', handleCalendlyWindowMessage);
+  window.addEventListener('resize', syncCalendlyEmbedLayout);
 }
 
 async function api(path, options = {}) {
@@ -3205,8 +3206,13 @@ async function openScheduleModal(context = 'public') {
   dom.scheduleModalTitle.textContent = scheduleInfo.title;
   dom.scheduleModalDescription.textContent = scheduleInfo.description;
   dom.calendlyEmbed.innerHTML = '';
+  syncCalendlyEmbedLayout();
 
-  if (!scheduleInfo.url || scheduleInfo.url.includes('your-calendly-link')) {
+  if (
+    !scheduleInfo.url
+    || scheduleInfo.url.includes('your-calendly-link')
+    || scheduleInfo.url.includes('/tu-cuenta')
+  ) {
     dom.calendlyEmbed.innerHTML = `
       <div class="empty-state">
         Aún no se configuró la URL real de Calendly. Puedes actualizarla desde el panel admin en Configuración.
@@ -3218,13 +3224,11 @@ async function openScheduleModal(context = 'public') {
   }
 
   try {
-    await loadCalendlyScript();
-    dom.calendlyEmbed.innerHTML = '';
-    window.Calendly.initInlineWidget({
-      url: scheduleInfo.url,
-      parentElement: dom.calendlyEmbed,
-      resize: true,
-    });
+    renderCalendlyFrame(scheduleInfo.url);
+    syncCalendlyEmbedLayout();
+    window.requestAnimationFrame(syncCalendlyEmbedLayout);
+    window.setTimeout(syncCalendlyEmbedLayout, 250);
+    window.setTimeout(syncCalendlyEmbedLayout, 900);
     dom.scheduleFeedback.textContent = 'Cuando se agende una cita, intentaremos registrarla también en la base de datos.';
     dom.scheduleFeedback.dataset.state = 'success';
   } catch (error) {
@@ -3238,7 +3242,60 @@ function closeScheduleModal(event) {
   if (!event || event.target === dom.scheduleModal) {
     dom.scheduleModal.classList.add('hidden');
     dom.calendlyEmbed.innerHTML = '';
+    dom.calendlyEmbed.style.height = '';
   }
+}
+
+function getCalendlyEmbedHeight() {
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 900;
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 1440;
+
+  if (viewportWidth <= 480) {
+    return Math.max(Math.min(Math.round(viewportHeight * 0.62), 560), 460);
+  }
+
+  if (viewportWidth <= 768) {
+    return Math.max(Math.min(Math.round(viewportHeight * 0.7), 640), 540);
+  }
+
+  return Math.max(Math.min(Math.round(viewportHeight * 0.76), 760), 620);
+}
+
+function syncCalendlyEmbedLayout() {
+  if (!dom.calendlyEmbed || dom.scheduleModal?.classList.contains('hidden')) {
+    return;
+  }
+
+  const targetHeight = getCalendlyEmbedHeight();
+  dom.calendlyEmbed.style.height = `${targetHeight}px`;
+
+  dom.calendlyEmbed.querySelectorAll('.calendly-inline-widget, iframe').forEach((node) => {
+    node.style.width = '100%';
+    node.style.minWidth = '0';
+    node.style.height = '100%';
+  });
+}
+
+function buildCalendlyEmbedUrl(rawUrl) {
+  const url = new URL(rawUrl);
+  url.searchParams.set('embed_domain', window.location.host);
+  url.searchParams.set('embed_type', 'Inline');
+  url.searchParams.set('hide_gdpr_banner', '1');
+  url.searchParams.set('primary_color', '0ab3ff');
+  return url.toString();
+}
+
+function renderCalendlyFrame(rawUrl) {
+  const embedUrl = buildCalendlyEmbedUrl(rawUrl);
+  dom.calendlyEmbed.innerHTML = `
+    <iframe
+      src="${escapeAttribute(embedUrl)}"
+      title="Calendly"
+      loading="lazy"
+      referrerpolicy="strict-origin-when-cross-origin"
+      allow="camera; microphone; autoplay; clipboard-write; fullscreen"
+    ></iframe>
+  `;
 }
 
 function resolveScheduleContext(context) {

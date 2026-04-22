@@ -4,7 +4,7 @@ Sistema web para agencia digital con:
 
 - frontend publico responsive
 - backend en Flask
-- base de datos MySQL
+- base de datos PostgreSQL
 - panel de cliente
 - panel de administrador
 - panel comercial / ventas
@@ -12,10 +12,10 @@ Sistema web para agencia digital con:
 - generacion de cotizaciones PDF
 - integracion con Calendly
 
-Este README sirve para dos cosas:
+Este README sirve para:
 
-1. levantar el proyecto localmente en otra computadora
-2. dejarlo listo para subirlo a Render en produccion
+1. levantar el proyecto desde cero en otra computadora
+2. dejarlo listo para despliegue en Render
 
 [![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/omwizz/TISNET)
 
@@ -33,11 +33,11 @@ TISNET/
 |-- backend/
 |   |-- requirements.txt
 |   |-- schema.sql
-|   `-- src/server.py
-|-- deploy/
-|   `-- mysql/
-|       |-- Dockerfile
-|       `-- config/user.cnf
+|   `-- src/
+|       |-- config/
+|       |   |-- database.py
+|       |   `-- env.py
+|       `-- server.py
 `-- frontend/
     |-- index.html
     `-- src/assets/
@@ -45,16 +45,17 @@ TISNET/
 
 ## 2. Requisitos para desarrollo local
 
-Instala lo siguiente en Windows:
+Instala esto en Windows:
 
-- XAMPP con MySQL
 - Python 3.12 o superior
+- PostgreSQL 16 o superior
 - pip
 - navegador web
 
 Opcional pero recomendado:
 
 - VS Code
+- pgAdmin
 - Git
 
 ## 3. Como compartir el proyecto con otro companero
@@ -63,30 +64,39 @@ La forma mas simple es:
 
 1. comprimir la carpeta `TISNET` en `.zip`
 2. copiarla a la otra computadora
-3. colocarla dentro de `C:\xampp\htdocs\`
+3. descomprimirla en cualquier ruta de trabajo
 
 Por ejemplo:
 
 ```text
-C:\xampp\htdocs\TISNET
+C:\proyectos\TISNET
 ```
 
-Tambien puede estar en:
+Lo importante es que dentro exista el archivo `app.py`.
 
-```text
-C:\xampp\htdocs\proyecto\TISNET
-```
+## 4. Configurar PostgreSQL local
 
-Lo importante es que la carpeta tenga dentro el archivo `app.py`.
+1. instala PostgreSQL
+2. recuerda el usuario y la clave del superusuario
+3. crea una base de datos vacia llamada `tisnet_db`
 
-## 4. Configurar el archivo .env
+Si usas pgAdmin:
 
-Si ya existe un `.env` funcional, se puede usar directamente.
+1. abre pgAdmin
+2. entra a tu servidor local
+3. clic derecho en `Databases`
+4. elige `Create` -> `Database`
+5. escribe `tisnet_db`
+6. guarda
+
+## 5. Configurar el archivo .env
+
+Si ya existe un `.env` funcional, puedes reutilizarlo.
 
 Si no existe:
 
-1. copiar `.env.example`
-2. renombrarlo a `.env`
+1. copia `.env.example`
+2. renombralo a `.env`
 
 Ejemplo base para local:
 
@@ -116,11 +126,15 @@ CALENDLY_CLIENT_REVIEW_URL=https://calendly.com/tu-cuenta
 CALENDLY_CLIENT_CLOSE_URL=https://calendly.com/tu-cuenta
 CALENDLY_PERSONAL_ACCESS_TOKEN=
 
-MYSQL_HOST=127.0.0.1
-MYSQL_PORT=3306
-MYSQL_USER=root
-MYSQL_PASSWORD=
-MYSQL_DATABASE=tisnet_db
+DATABASE_URL=
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=tu-clave
+POSTGRES_DATABASE=tisnet_db
+POSTGRES_ADMIN_DATABASE=postgres
+POSTGRES_SSLMODE=
+POSTGRES_CONNECT_TIMEOUT=5
 
 SMTP_HOST=
 SMTP_PORT=587
@@ -131,17 +145,14 @@ SMTP_FROM_EMAIL=hola@tisnet.pe
 SMTP_FROM_NAME=TISNET
 ```
 
-## 5. Encender MySQL en XAMPP
+Notas:
 
-1. abrir `XAMPP Control Panel`
-2. en la fila `MySQL`, hacer clic en `Start`
-3. confirmar que quede en verde
-
-No es obligatorio encender Apache.
+- si defines `DATABASE_URL`, el backend la usara primero
+- si `DATABASE_URL` esta vacia, usara `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DATABASE`
 
 ## 6. Instalar dependencias
 
-Abre PowerShell en la carpeta del proyecto y ejecuta:
+Abre PowerShell dentro de la carpeta del proyecto y ejecuta:
 
 ```powershell
 pip install -r requirements.txt
@@ -196,16 +207,18 @@ Faltan dependencias:
 pip install -r requirements.txt
 ```
 
-### No conecta a MySQL
+### No conecta a PostgreSQL
 
 Revisa que:
 
-- XAMPP tenga `MySQL` encendido
-- `MYSQL_HOST`, `MYSQL_PORT`, `MYSQL_USER`, `MYSQL_PASSWORD` esten correctos
+- PostgreSQL este encendido
+- la base `tisnet_db` exista
+- `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_USER`, `POSTGRES_PASSWORD` y `POSTGRES_DATABASE` esten correctos
+- o que `DATABASE_URL` tenga una cadena valida
 
 ### Address already in use
 
-El puerto 5000 ya esta ocupado. Puedes cerrar la otra instancia o cambiar:
+El puerto 5000 ya esta ocupado. Puedes cambiar:
 
 ```env
 FLASK_PORT=5001
@@ -223,30 +236,27 @@ Este proyecto ya queda preparado para Render con:
 
 - `render.yaml`
 - `requirements-render.txt`
-- `deploy/mysql/Dockerfile`
-- `deploy/mysql/config/user.cnf`
 - `.python-version`
 
 ### Arquitectura en Render
 
-- `tisnet-web`: Web Service con runtime `python`
-- `tisnet-mysql`: Private Service con runtime `docker` usando MySQL 8
+- `tisnet-web`: Web Service Python
+- `tisnet-db`: Render Postgres
 
 ### Paso a paso para subirlo
 
-1. Sube este proyecto a un repositorio de GitHub.
-2. Crea una cuenta en [Render](https://render.com/).
-3. En Render, elige `New` -> `Blueprint`.
-4. Conecta el repositorio de GitHub donde esta TISNET.
-5. Render detectara el archivo `render.yaml`.
-6. Completa las variables secretas que Render te pedira.
-7. Lanza el deploy.
+1. sube este proyecto a GitHub
+2. crea una cuenta en [Render](https://render.com/)
+3. en Render elige `New` -> `Blueprint`
+4. conecta el repositorio
+5. Render detectara `render.yaml`
+6. completa los secretos que Render te pida
+7. lanza el deploy
 
 ### Variables que debes completar en Render
 
-Estas deben ponerse con valores reales:
+Debes poner valores reales para:
 
-- `FLASK_SECRET_KEY`
 - `OWNER_ADMIN_PASSWORD`
 - `OWNER_SALES_PASSWORD`
 - `CALENDLY_PUBLIC_URL`
@@ -258,44 +268,14 @@ Estas deben ponerse con valores reales:
 - `SMTP_PASSWORD`
 - `SMTP_FROM_EMAIL`
 
-### Lo que Render configurara automaticamente
+### Variables que Render conectara automaticamente
 
-No necesitas escribir manualmente estas si usas el `render.yaml`:
+Estas salen de la base PostgreSQL creada por el Blueprint:
 
-- `MYSQL_HOST`
-- `MYSQL_PORT`
-- `MYSQL_USER`
-- `MYSQL_PASSWORD`
-- `MYSQL_DATABASE`
+- `DATABASE_URL`
+- `POSTGRES_DATABASE`
 
-Porque se conectan automaticamente al servicio privado `tisnet-mysql`.
-
-### Dominio personalizado
-
-Cuando el deploy termine:
-
-1. entra al servicio `tisnet-web`
-2. abre `Settings`
-3. ve a `Custom Domains`
-4. agrega tu dominio
-
-## 11. Notas importantes de produccion
-
-- este proyecto usa `gunicorn` para servir Flask en produccion
-- `gunicorn` se instala solo en Render con `requirements-render.txt`
-- MySQL en Render se monta con disco persistente
-- el backend crea tablas automaticamente al arrancar
-- para correos reales, configura SMTP real antes del deploy
-- no subas tokens privados a GitHub
-
-## 12. Archivos clave
-
-- Backend principal: [server.py](C:\xampp\htdocs\proyecto\TISNET\backend\src\server.py)
-- Entrada Flask: [app.py](C:\xampp\htdocs\proyecto\TISNET\app.py)
-- Variables de ejemplo: [.env.example](C:\xampp\htdocs\proyecto\TISNET\.env.example)
-- Blueprint de Render: [render.yaml](C:\xampp\htdocs\proyecto\TISNET\render.yaml)
-
-## 13. Comandos utiles
+## 11. Comandos utiles
 
 Instalar dependencias:
 
@@ -303,20 +283,37 @@ Instalar dependencias:
 pip install -r requirements.txt
 ```
 
-Ejecutar local:
+Ejecutar la app:
 
 ```powershell
 python app.py
 ```
 
-## 14. Resumen rapido para un companero
+Validar sintaxis:
 
-1. copiar la carpeta `TISNET`
-2. ponerla en `C:\xampp\htdocs\`
-3. encender MySQL en XAMPP
-4. abrir PowerShell en la carpeta
+```powershell
+python -m py_compile app.py backend\src\server.py backend\src\config\database.py backend\src\config\env.py
+```
+
+## 12. Visualizar el README bonito en VS Code
+
+Si abres el proyecto en VS Code:
+
+1. abre `README.md`
+2. presiona `Ctrl + Shift + V`
+
+Si quieres vista lateral:
+
+1. abre `README.md`
+2. presiona `Ctrl + K`
+3. luego presiona `V`
+
+## 13. Resumen rapido para un companero
+
+1. instalar Python y PostgreSQL
+2. crear la base `tisnet_db`
+3. copiar `.env.example` a `.env`
+4. completar credenciales PostgreSQL en `.env`
 5. ejecutar `pip install -r requirements.txt`
 6. ejecutar `python app.py`
 7. abrir `http://127.0.0.1:5000`
-
-Con eso ya puede entrar y trabajar el proyecto.

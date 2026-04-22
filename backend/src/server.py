@@ -4,57 +4,93 @@ import os
 import smtplib
 from contextlib import contextmanager
 from datetime import date, datetime, time, timedelta
+from decimal import Decimal
 from email.message import EmailMessage
 from functools import wraps
 from io import BytesIO
-from pathlib import Path
 
 from flask import Flask, jsonify, request, send_file, send_from_directory, session
 from fpdf import FPDF
 from werkzeug.exceptions import BadRequest
 from werkzeug.security import check_password_hash, generate_password_hash
 
-
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-BACKEND_DIR = PROJECT_ROOT / "backend"
-FRONTEND_DIR = PROJECT_ROOT / "frontend"
-FRONTEND_ASSETS_DIR = FRONTEND_DIR / "src" / "assets"
-BASE_DIR = PROJECT_ROOT
-
-
-def load_env_file(env_path):
-    if not env_path.exists():
-        return
-
-    for raw_line in env_path.read_text(encoding="utf-8").splitlines():
-        line = raw_line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-
-        key, value = line.split("=", 1)
-        key = key.strip()
-        if not key or key in os.environ:
-            continue
-
-        value = value.strip()
-        if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
-            value = value[1:-1]
-        os.environ[key] = value
+from backend.src.config.database import (
+    BOOTSTRAP_STATE,
+    database_error_message as pg_database_error_message,
+    db_cursor as pg_db_cursor,
+    dict_cursor,
+    ensure_database_bootstrapped as pg_ensure_database_bootstrapped,
+    register_seed_callback,
+    require_database as pg_require_database,
+)
+from backend.src.config.env import (
+    BASE_DIR,
+    BACKEND_DIR,
+    FRONTEND_ASSETS_DIR,
+    FRONTEND_DIR,
+    PROJECT_ROOT,
+    load_environment,
+)
 
 
-load_env_file(PROJECT_ROOT / ".env")
-load_env_file(BACKEND_DIR / ".env")
+load_environment()
 
-SCHEMA_PATH = BACKEND_DIR / "schema.sql"
 SITE_SETTINGS_ID = 1
 DEFAULT_WHATSAPP = "+51999999999"
 CALENDLY_PLACEHOLDER_URL = "https://calendly.com/your-calendly-link"
-DEFAULT_CALENDLY = os.getenv("CALENDLY_PUBLIC_URL", CALENDLY_PLACEHOLDER_URL).strip() or CALENDLY_PLACEHOLDER_URL
+CALENDLY_LEGACY_PLACEHOLDERS = {
+    CALENDLY_PLACEHOLDER_URL,
+    "https://calendly.com/tu-cuenta",
+}
+OWNER_ADMIN_EMAIL_PLACEHOLDERS = {"tu-admin@dominio.com"}
+OWNER_SALES_EMAIL_PLACEHOLDERS = {"ventas@dominio.com"}
+OWNER_PASSWORD_PLACEHOLDERS = {
+    "cambia-esta-clave-super-segura",
+    "cambia-la-clave-de-ventas",
+}
+OWNER_WEBSITE_PLACEHOLDERS = {
+    "https://tudominio.com",
+    "https://tu-dominio.com",
+}
+
+
+def is_calendly_placeholder(value):
+    return (value or "").strip() in CALENDLY_LEGACY_PLACEHOLDERS
+
+
+def resolve_env_value(env_name, default_value, *, placeholders=None, lowercase=False):
+    value = os.getenv(env_name, "").strip()
+    normalized_placeholders = {
+        item.lower().strip() if lowercase else item.strip() for item in (placeholders or set())
+    }
+    comparable_value = value.lower() if lowercase else value
+
+    if not value or comparable_value in normalized_placeholders:
+        return default_value
+
+    return comparable_value if lowercase else value
+
+
+DEFAULT_CALENDLY = resolve_env_value(
+    "CALENDLY_PUBLIC_URL",
+    CALENDLY_PLACEHOLDER_URL,
+    placeholders=CALENDLY_LEGACY_PLACEHOLDERS,
+)
 DEFAULT_CLIENT_REVIEW_CALENDLY = (
-    os.getenv("CALENDLY_CLIENT_REVIEW_URL", DEFAULT_CALENDLY).strip() or DEFAULT_CALENDLY
+    resolve_env_value(
+        "CALENDLY_CLIENT_REVIEW_URL",
+        DEFAULT_CALENDLY,
+        placeholders=CALENDLY_LEGACY_PLACEHOLDERS,
+    )
+    or DEFAULT_CALENDLY
 )
 DEFAULT_CLIENT_CLOSE_CALENDLY = (
-    os.getenv("CALENDLY_CLIENT_CLOSE_URL", DEFAULT_CALENDLY).strip() or DEFAULT_CALENDLY
+    resolve_env_value(
+        "CALENDLY_CLIENT_CLOSE_URL",
+        DEFAULT_CALENDLY,
+        placeholders=CALENDLY_LEGACY_PLACEHOLDERS,
+    )
+    or DEFAULT_CALENDLY
 )
 CALENDLY_PERSONAL_ACCESS_TOKEN = os.getenv("CALENDLY_PERSONAL_ACCESS_TOKEN", "").strip()
 DEFAULT_OWNER_ADMIN_EMAIL = "admin@tisnet.pe"
@@ -121,25 +157,53 @@ ENABLE_DEMO_LOGIN = os.getenv("ENABLE_DEMO_LOGIN", "false").strip().lower() in {
     "on",
 }
 OWNER_ADMIN_ACCOUNT = {
-    "full_name": os.getenv("OWNER_ADMIN_NAME", "Administrador Principal TISNET").strip()
+    "full_name": resolve_env_value("OWNER_ADMIN_NAME", "Administrador Principal TISNET")
     or "Administrador Principal TISNET",
-    "email": os.getenv("OWNER_ADMIN_EMAIL", DEFAULT_OWNER_ADMIN_EMAIL).strip().lower()
+    "email": resolve_env_value(
+        "OWNER_ADMIN_EMAIL",
+        DEFAULT_OWNER_ADMIN_EMAIL,
+        placeholders=OWNER_ADMIN_EMAIL_PLACEHOLDERS,
+        lowercase=True,
+    )
     or DEFAULT_OWNER_ADMIN_EMAIL,
-    "password": os.getenv("OWNER_ADMIN_PASSWORD", DEFAULT_OWNER_ADMIN_PASSWORD).strip()
+    "password": resolve_env_value(
+        "OWNER_ADMIN_PASSWORD",
+        DEFAULT_OWNER_ADMIN_PASSWORD,
+        placeholders=OWNER_PASSWORD_PLACEHOLDERS,
+    )
     or DEFAULT_OWNER_ADMIN_PASSWORD,
     "company": os.getenv("OWNER_ADMIN_COMPANY", "TISNET").strip() or "TISNET",
-    "website": os.getenv("OWNER_ADMIN_WEBSITE", "https://tisnet.pe").strip() or "https://tisnet.pe",
+    "website": resolve_env_value(
+        "OWNER_ADMIN_WEBSITE",
+        "https://tisnet.pe",
+        placeholders=OWNER_WEBSITE_PLACEHOLDERS,
+    )
+    or "https://tisnet.pe",
     "phone": os.getenv("OWNER_ADMIN_PHONE", DEFAULT_WHATSAPP).strip() or DEFAULT_WHATSAPP,
 }
 OWNER_SALES_ACCOUNT = {
-    "full_name": os.getenv("OWNER_SALES_NAME", "Ejecutivo Comercial TISNET").strip()
+    "full_name": resolve_env_value("OWNER_SALES_NAME", "Ejecutivo Comercial TISNET")
     or "Ejecutivo Comercial TISNET",
-    "email": os.getenv("OWNER_SALES_EMAIL", DEFAULT_OWNER_SALES_EMAIL).strip().lower()
+    "email": resolve_env_value(
+        "OWNER_SALES_EMAIL",
+        DEFAULT_OWNER_SALES_EMAIL,
+        placeholders=OWNER_SALES_EMAIL_PLACEHOLDERS,
+        lowercase=True,
+    )
     or DEFAULT_OWNER_SALES_EMAIL,
-    "password": os.getenv("OWNER_SALES_PASSWORD", DEFAULT_OWNER_SALES_PASSWORD).strip()
+    "password": resolve_env_value(
+        "OWNER_SALES_PASSWORD",
+        DEFAULT_OWNER_SALES_PASSWORD,
+        placeholders=OWNER_PASSWORD_PLACEHOLDERS,
+    )
     or DEFAULT_OWNER_SALES_PASSWORD,
     "company": os.getenv("OWNER_SALES_COMPANY", "TISNET").strip() or "TISNET",
-    "website": os.getenv("OWNER_SALES_WEBSITE", "https://tisnet.pe").strip() or "https://tisnet.pe",
+    "website": resolve_env_value(
+        "OWNER_SALES_WEBSITE",
+        "https://tisnet.pe",
+        placeholders=OWNER_WEBSITE_PLACEHOLDERS,
+    )
+    or "https://tisnet.pe",
     "phone": os.getenv("OWNER_SALES_PHONE", DEFAULT_WHATSAPP).strip() or DEFAULT_WHATSAPP,
 }
 
@@ -150,8 +214,6 @@ app.secret_key = os.getenv("FLASK_SECRET_KEY", "tisnet-dev-secret-change-me")
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("tisnet")
-
-BOOTSTRAP_STATE = {"attempted": False, "ready": False, "error": None}
 
 
 def now_utc():
@@ -180,6 +242,8 @@ def normalize_value(value):
         return value.isoformat()
     if isinstance(value, time):
         return value.strftime("%H:%M:%S")
+    if isinstance(value, Decimal):
+        return float(value)
     return value
 
 
@@ -187,116 +251,22 @@ def normalize_row(row):
     return {key: normalize_value(value) for key, value in row.items()}
 
 
-def mysql_module():
-    import mysql.connector
-
-    return mysql.connector
-
-
-def mysql_config(include_database=True):
-    config = {
-        "host": os.getenv("MYSQL_HOST", "127.0.0.1"),
-        "port": int(os.getenv("MYSQL_PORT", "3306")),
-        "user": os.getenv("MYSQL_USER", "root"),
-        "password": os.getenv("MYSQL_PASSWORD", ""),
-        "charset": "utf8mb4",
-    }
-    if include_database:
-        config["database"] = os.getenv("MYSQL_DATABASE", "tisnet_db")
-    return config
-
-
-def split_sql_statements(sql_text):
-    statements = []
-    current = []
-    for line in sql_text.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("--"):
-            continue
-        current.append(line)
-        if stripped.endswith(";"):
-            statement = "\n".join(current).strip().rstrip(";")
-            if statement:
-                statements.append(statement)
-            current = []
-    if current:
-        statement = "\n".join(current).strip().rstrip(";")
-        if statement:
-            statements.append(statement)
-    return statements
-
-
 def ensure_database_bootstrapped(force=False):
-    if BOOTSTRAP_STATE["ready"] and not force:
-        return True
-    if BOOTSTRAP_STATE["attempted"] and BOOTSTRAP_STATE["error"] and not force:
-        return False
-
-    BOOTSTRAP_STATE["attempted"] = True
-    BOOTSTRAP_STATE["ready"] = False
-    BOOTSTRAP_STATE["error"] = None
-
-    mysql = mysql_module()
-    server_connection = None
-    database_connection = None
-
-    try:
-        server_connection = mysql.connect(**mysql_config(include_database=False))
-        server_cursor = server_connection.cursor()
-        database_name = os.getenv("MYSQL_DATABASE", "tisnet_db")
-        server_cursor.execute(
-            f"CREATE DATABASE IF NOT EXISTS `{database_name}` "
-            "CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci"
-        )
-        server_connection.commit()
-        server_cursor.close()
-        server_connection.close()
-
-        database_connection = mysql.connect(**mysql_config())
-        cursor = database_connection.cursor()
-        for statement in split_sql_statements(SCHEMA_PATH.read_text(encoding="utf-8")):
-            cursor.execute(statement)
-        database_connection.commit()
-        cursor.close()
-
-        seed_defaults(database_connection)
-        BOOTSTRAP_STATE["ready"] = True
-        logger.info("Base de datos inicializada correctamente.")
-        return True
-    except Exception as exc:
-        BOOTSTRAP_STATE["error"] = str(exc)
-        logger.exception("No se pudo inicializar la base de datos.")
-        return False
-    finally:
-        if database_connection is not None and database_connection.is_connected():
-            database_connection.close()
-        if server_connection is not None and server_connection.is_connected():
-            server_connection.close()
+    return pg_ensure_database_bootstrapped(force=force)
 
 
 def database_error_message():
-    if BOOTSTRAP_STATE["error"]:
-        return BOOTSTRAP_STATE["error"]
-    return "La base de datos no está lista todavía."
+    return pg_database_error_message()
 
 
 def require_database():
-    if ensure_database_bootstrapped():
-        return
-    raise RuntimeError(database_error_message())
+    return pg_require_database()
 
 
 @contextmanager
 def db_cursor(dictionary=False):
-    require_database()
-    mysql = mysql_module()
-    connection = mysql.connect(**mysql_config())
-    cursor = connection.cursor(dictionary=dictionary)
-    try:
-        yield connection, cursor
-    finally:
-        cursor.close()
-        connection.close()
+    with pg_db_cursor(dictionary=dictionary) as context:
+        yield context
 
 
 def fetch_one(query, params=()):
@@ -314,9 +284,18 @@ def fetch_all(query, params=()):
 
 def execute_write(query, params=()):
     with db_cursor() as (connection, cursor):
-        cursor.execute(query, params)
+        clean_query = query.strip().rstrip(";")
+        expects_id = clean_query.upper().startswith("INSERT ")
+        if expects_id and "RETURNING " not in clean_query.upper():
+            clean_query = f"{clean_query} RETURNING id"
+
+        cursor.execute(clean_query, params)
+        inserted_id = None
+        if expects_id:
+            row = cursor.fetchone()
+            inserted_id = row[0] if row else None
         connection.commit()
-        return cursor.lastrowid
+        return inserted_id
 
 
 def execute_many(query, param_list):
@@ -346,9 +325,9 @@ def ensure_role(connection, code, name):
     if role_id:
         return role_id
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO roles (code, name) VALUES (%s, %s)", (code, name))
+    cursor.execute("INSERT INTO roles (code, name) VALUES (%s, %s) RETURNING id", (code, name))
+    role_id = cursor.fetchone()[0]
     connection.commit()
-    role_id = cursor.lastrowid
     cursor.close()
     return role_id
 
@@ -370,16 +349,17 @@ def ensure_site_settings(connection):
             footer_tagline
         )
         VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-        ON DUPLICATE KEY UPDATE
-            agency_name = VALUES(agency_name),
-            contact_email = VALUES(contact_email),
-            notification_email = VALUES(notification_email),
-            whatsapp_phone = VALUES(whatsapp_phone),
-            public_calendly_url = COALESCE(NULLIF(site_settings.public_calendly_url, ''), VALUES(public_calendly_url)),
-            client_review_calendly_url = COALESCE(NULLIF(site_settings.client_review_calendly_url, ''), VALUES(client_review_calendly_url)),
-            client_close_calendly_url = COALESCE(NULLIF(site_settings.client_close_calendly_url, ''), VALUES(client_close_calendly_url)),
-            hero_cta_label = VALUES(hero_cta_label),
-            footer_tagline = VALUES(footer_tagline)
+        ON CONFLICT (id) DO UPDATE
+        SET
+            agency_name = EXCLUDED.agency_name,
+            contact_email = EXCLUDED.contact_email,
+            notification_email = EXCLUDED.notification_email,
+            whatsapp_phone = EXCLUDED.whatsapp_phone,
+            public_calendly_url = COALESCE(NULLIF(site_settings.public_calendly_url, ''), EXCLUDED.public_calendly_url),
+            client_review_calendly_url = COALESCE(NULLIF(site_settings.client_review_calendly_url, ''), EXCLUDED.client_review_calendly_url),
+            client_close_calendly_url = COALESCE(NULLIF(site_settings.client_close_calendly_url, ''), EXCLUDED.client_close_calendly_url),
+            hero_cta_label = EXCLUDED.hero_cta_label,
+            footer_tagline = EXCLUDED.footer_tagline
         """,
         (
             SITE_SETTINGS_ID,
@@ -397,7 +377,7 @@ def ensure_site_settings(connection):
     connection.commit()
     cursor.close()
 
-    settings_cursor = connection.cursor(dictionary=True)
+    settings_cursor = dict_cursor(connection)
     settings_cursor.execute(
         """
         SELECT public_calendly_url, client_review_calendly_url, client_close_calendly_url
@@ -413,11 +393,11 @@ def ensure_site_settings(connection):
     review_url = current.get("client_review_calendly_url") or ""
     close_url = current.get("client_close_calendly_url") or ""
 
-    if public_url == CALENDLY_PLACEHOLDER_URL or not public_url:
+    if is_calendly_placeholder(public_url) or not public_url:
         public_url = DEFAULT_CALENDLY
-    if review_url == CALENDLY_PLACEHOLDER_URL or not review_url:
+    if is_calendly_placeholder(review_url) or not review_url:
         review_url = DEFAULT_CLIENT_REVIEW_CALENDLY
-    if close_url == CALENDLY_PLACEHOLDER_URL or not close_url:
+    if is_calendly_placeholder(close_url) or not close_url:
         close_url = DEFAULT_CLIENT_CLOSE_CALENDLY
 
     update_cursor = connection.cursor()
@@ -439,9 +419,9 @@ def ensure_site_settings(connection):
         """
         UPDATE meetings
         SET calendly_url = %s
-        WHERE calendly_url IS NULL OR calendly_url = '' OR calendly_url = %s
+        WHERE calendly_url IS NULL OR calendly_url = '' OR calendly_url = %s OR calendly_url = %s
         """,
-        (public_url, CALENDLY_PLACEHOLDER_URL),
+        (public_url, CALENDLY_PLACEHOLDER_URL, "https://calendly.com/tu-cuenta"),
     )
     connection.commit()
     meetings_cursor.close()
@@ -475,14 +455,59 @@ def ensure_user(connection, role_id, full_name, email, password, company="", web
     cursor.execute(
         """
         INSERT INTO users (role_id, full_name, email, password_hash, company, website, phone, is_demo)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """,
         (role_id, full_name, email, password_hash, company, website, phone, int(is_demo)),
     )
+    user_id = cursor.fetchone()[0]
     connection.commit()
-    user_id = cursor.lastrowid
     cursor.close()
     return user_id
+
+
+def ensure_operator_account(connection, role_id, account, legacy_emails=None):
+    email = (account.get("email") or "").strip().lower()
+    legacy_emails = {
+        candidate.strip().lower()
+        for candidate in (legacy_emails or [])
+        if candidate and candidate.strip()
+    }
+    candidate_emails = [email, *sorted(legacy_emails - {email})]
+
+    user_id = None
+    for candidate_email in candidate_emails:
+        user_id = fetch_value(connection, "SELECT id FROM users WHERE email = %s", (candidate_email,))
+        if user_id:
+            break
+
+    password_hash = generate_password_hash(account["password"])
+    full_name = account["full_name"]
+    company = account.get("company", "")
+    website = account.get("website", "")
+    phone = account.get("phone", "")
+
+    if user_id:
+        cursor = connection.cursor()
+        cursor.execute(
+            """
+            UPDATE users
+            SET role_id = %s,
+                full_name = %s,
+                email = %s,
+                password_hash = %s,
+                company = %s,
+                website = %s,
+                phone = %s,
+                is_demo = 0
+            WHERE id = %s
+            """,
+            (role_id, full_name, email, password_hash, company, website, phone, user_id),
+        )
+        connection.commit()
+        cursor.close()
+        return user_id
+
+    return ensure_user(connection, role_id, full_name, email, account["password"], company, website, phone, False)
 
 
 def ensure_team_member(connection, full_name, role_title, email="", accent_color="#0A66C2"):
@@ -515,12 +540,12 @@ def ensure_team_member(connection, full_name, role_title, email="", accent_color
     cursor.execute(
         """
         INSERT INTO team_members (full_name, role_title, email, accent_color, is_active)
-        VALUES (%s, %s, %s, %s, 1)
+        VALUES (%s, %s, %s, %s, 1) RETURNING id
         """,
         (full_name, role_title, lookup_value, accent_color),
     )
+    member_id = cursor.fetchone()[0]
     connection.commit()
-    member_id = cursor.lastrowid
     cursor.close()
     return member_id
 
@@ -623,7 +648,7 @@ def seed_showcase_clients(connection):
     if count_table(connection, "showcase_clients") > 0:
         return
 
-    cursor = connection.cursor(dictionary=True)
+    cursor = dict_cursor(connection)
     cursor.execute("SELECT id, slug FROM portfolio_items ORDER BY id")
     portfolio_map = {row["slug"]: row["id"] for row in cursor.fetchall()}
     cursor.close()
@@ -700,7 +725,7 @@ def ensure_project(
             slug, client_user_id, lead_id, title, service_type, status, admin_status, summary,
             budget, progress_percent, start_date, due_date
         )
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) RETURNING id
         """,
         (
             slug,
@@ -717,8 +742,8 @@ def ensure_project(
             due_date,
         ),
     )
+    project_id = cursor.fetchone()[0]
     connection.commit()
-    project_id = cursor.lastrowid
     cursor.close()
     return project_id
 
@@ -770,7 +795,7 @@ def seed_projects(connection, client_role_id, admin_role_id):
         )
 
     today = date.today()
-    cursor = connection.cursor(dictionary=True)
+    cursor = dict_cursor(connection)
     cursor.execute("SELECT id, email FROM leads")
     lead_map = {row["email"]: row["id"] for row in cursor.fetchall()}
     cursor.close()
@@ -951,7 +976,7 @@ def seed_project_tasks(connection):
     if count_table(connection, "project_tasks") > 0:
         return
 
-    cursor = connection.cursor(dictionary=True)
+    cursor = dict_cursor(connection)
     cursor.execute("SELECT id, slug, title FROM projects")
     project_map = {row["slug"]: row for row in cursor.fetchall()}
     cursor.execute("SELECT id, email, full_name FROM team_members WHERE is_active = 1")
@@ -1052,27 +1077,17 @@ def seed_defaults(connection):
     sales_role_id = ensure_role(connection, "sales", "Ventas")
     ensure_site_settings(connection)
 
-    ensure_user(
+    ensure_operator_account(
         connection,
         admin_role_id,
-        OWNER_ADMIN_ACCOUNT["full_name"],
-        OWNER_ADMIN_ACCOUNT["email"],
-        OWNER_ADMIN_ACCOUNT["password"],
-        OWNER_ADMIN_ACCOUNT["company"],
-        OWNER_ADMIN_ACCOUNT["website"],
-        OWNER_ADMIN_ACCOUNT["phone"],
-        False,
+        OWNER_ADMIN_ACCOUNT,
+        legacy_emails={DEFAULT_OWNER_ADMIN_EMAIL, *OWNER_ADMIN_EMAIL_PLACEHOLDERS},
     )
-    ensure_user(
+    ensure_operator_account(
         connection,
         sales_role_id,
-        OWNER_SALES_ACCOUNT["full_name"],
-        OWNER_SALES_ACCOUNT["email"],
-        OWNER_SALES_ACCOUNT["password"],
-        OWNER_SALES_ACCOUNT["company"],
-        OWNER_SALES_ACCOUNT["website"],
-        OWNER_SALES_ACCOUNT["phone"],
-        False,
+        OWNER_SALES_ACCOUNT,
+        legacy_emails={DEFAULT_OWNER_SALES_EMAIL, *OWNER_SALES_EMAIL_PLACEHOLDERS},
     )
 
     if ENABLE_DEMO_LOGIN:
@@ -1116,6 +1131,9 @@ def seed_defaults(connection):
     seed_projects(connection, client_role_id, admin_role_id)
     seed_team_members(connection)
     seed_project_tasks(connection)
+
+
+register_seed_callback(seed_defaults)
 
 
 def api_response(success=True, message="", **payload):
@@ -2289,7 +2307,12 @@ def fetch_admin_tasks():
         LEFT JOIN users ON projects.client_user_id = users.id
         LEFT JOIN team_members ON project_tasks.assignee_id = team_members.id
         ORDER BY
-            FIELD(project_tasks.status, 'in_progress', 'pending', 'done'),
+            CASE project_tasks.status
+                WHEN 'in_progress' THEN 0
+                WHEN 'pending' THEN 1
+                WHEN 'done' THEN 2
+                ELSE 3
+            END,
             project_tasks.due_date IS NULL,
             project_tasks.due_date ASC,
             project_tasks.updated_at DESC
@@ -2305,7 +2328,7 @@ def performance_metrics_payload():
             COALESCE(SUM(CASE WHEN status = 'done' THEN 1 ELSE 0 END), 0) AS completed_tasks,
             COALESCE(SUM(CASE WHEN status = 'in_progress' THEN 1 ELSE 0 END), 0) AS active_tasks,
             COALESCE(SUM(CASE WHEN status = 'pending' THEN 1 ELSE 0 END), 0) AS pending_tasks,
-            COALESCE(SUM(CASE WHEN due_date < CURDATE() AND status <> 'done' THEN 1 ELSE 0 END), 0) AS overdue_tasks
+            COALESCE(SUM(CASE WHEN due_date < CURRENT_DATE AND status <> 'done' THEN 1 ELSE 0 END), 0) AS overdue_tasks
         FROM project_tasks
         """
     ) or {}
@@ -2374,18 +2397,20 @@ def monthly_trends():
 
     lead_rows = fetch_all(
         """
-        SELECT DATE_FORMAT(created_at, '%Y-%m') AS period, COUNT(*) AS total
+        SELECT TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS period, COUNT(*) AS total
         FROM leads
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '5 months'
+        GROUP BY DATE_TRUNC('month', created_at)
+        ORDER BY DATE_TRUNC('month', created_at)
         """,
     )
     revenue_rows = fetch_all(
         """
-        SELECT DATE_FORMAT(created_at, '%Y-%m') AS period, COALESCE(SUM(budget), 0) AS total
+        SELECT TO_CHAR(DATE_TRUNC('month', created_at), 'YYYY-MM') AS period, COALESCE(SUM(budget), 0) AS total
         FROM projects
-        WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
-        GROUP BY DATE_FORMAT(created_at, '%Y-%m')
+        WHERE created_at >= DATE_TRUNC('month', CURRENT_DATE) - INTERVAL '5 months'
+        GROUP BY DATE_TRUNC('month', created_at)
+        ORDER BY DATE_TRUNC('month', created_at)
         """,
     )
     lead_map = {row["period"]: int(row["total"]) for row in lead_rows}
@@ -2412,7 +2437,7 @@ def admin_overview_payload():
             (SELECT COUNT(*) FROM leads WHERE status = 'new') AS new_leads,
             (SELECT COUNT(DISTINCT client_user_id) FROM projects WHERE status = 'in_progress') AS active_clients,
             (SELECT COUNT(*) FROM projects WHERE status = 'in_progress') AS active_projects,
-            (SELECT COALESCE(SUM(budget), 0) FROM projects WHERE MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())) AS month_revenue,
+            (SELECT COALESCE(SUM(budget), 0) FROM projects WHERE DATE_TRUNC('month', created_at) = DATE_TRUNC('month', CURRENT_DATE)) AS month_revenue,
             (SELECT COALESCE(AVG(budget), 0) FROM projects WHERE budget > 0) AS avg_ticket,
             (SELECT COUNT(*) FROM leads) AS total_leads,
             (SELECT COUNT(*) FROM leads WHERE status = 'won') AS won_leads,
@@ -2516,14 +2541,15 @@ def admin_overview_payload():
             users.email,
             users.company,
             users.website,
+            users.created_at,
             COUNT(projects.id) AS project_count,
             COALESCE(SUM(projects.budget), 0) AS total_budget,
             MAX(projects.updated_at) AS last_update
         FROM users
         JOIN roles ON users.role_id = roles.id AND roles.code = 'client'
         LEFT JOIN projects ON projects.client_user_id = users.id
-        GROUP BY users.id, users.full_name, users.email, users.company, users.website
-        HAVING project_count > 0
+        GROUP BY users.id, users.full_name, users.email, users.company, users.website, users.created_at
+        HAVING COUNT(projects.id) > 0
         ORDER BY last_update DESC, users.created_at DESC
         """
     )
@@ -2879,6 +2905,11 @@ def image_file(filename):
     return send_from_directory(FRONTEND_ASSETS_DIR / "img", filename)
 
 
+@app.route("/favicon.ico")
+def favicon():
+    return send_from_directory(FRONTEND_ASSETS_DIR / "img", "wstapicon.png")
+
+
 @app.route("/api/system/health")
 def system_health():
     ready = ensure_database_bootstrapped()
@@ -3000,12 +3031,12 @@ def register():
         cursor.execute(
             """
             INSERT INTO users (role_id, full_name, email, password_hash, company, website, phone, is_demo)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, 0)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, 0) RETURNING id
             """,
             (client_role_id, full_name, email, generate_password_hash(password), company, website, phone),
         )
+        user_id = cursor.fetchone()[0]
         connection.commit()
-        user_id = cursor.lastrowid
 
     create_onboarding_project_for_user(user_id, company or full_name)
     user = get_user_by_id(user_id)
@@ -3632,10 +3663,6 @@ def not_found(_):
 def handle_exception(exc):
     logger.exception("Error no controlado.")
     return api_response(False, f"Ocurrió un error inesperado: {exc}"), 500
-
-
-ensure_database_bootstrapped()
-
 
 if __name__ == "__main__":
     debug_enabled = os.getenv("FLASK_DEBUG", "false").lower() == "true"
