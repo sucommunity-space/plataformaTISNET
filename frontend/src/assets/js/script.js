@@ -12,6 +12,8 @@ const state = {
   dragPayload: null,
   portfolioAutoScroll: null,
   selectedAdminClient: null,
+  mobileNavActive: 'home',
+  mobileNavSheetOpen: false,
 };
 
 const dom = {};
@@ -355,6 +357,7 @@ async function init() {
   bindStaticEvents();
   renderPricingCalculatorShell();
   renderTeamExperts();
+  updateNavigation();
 
   await Promise.all([loadPublicContent(), syncSession()]);
   updatePricingCalculator();
@@ -367,6 +370,13 @@ function cacheDom() {
   dom.navSales = document.getElementById('nav-sales');
   dom.navActionsVisitor = document.getElementById('nav-actions-visitor');
   dom.navActionsAuth = document.getElementById('nav-actions-auth');
+  dom.mobileNavShell = document.getElementById('mobile-nav-shell');
+  dom.mobileNavDock = document.getElementById('mobile-nav-dock');
+  dom.mobileNavBackdrop = document.getElementById('mobile-nav-backdrop');
+  dom.mobileNavSheetGrid = document.getElementById('mobile-nav-sheet-grid');
+  dom.mobileNavSheetKicker = document.getElementById('mobile-nav-sheet-kicker');
+  dom.mobileNavSheetTitle = document.getElementById('mobile-nav-sheet-title');
+  dom.mobileNavSheetCopy = document.getElementById('mobile-nav-sheet-copy');
   dom.userAvatar = document.getElementById('user-avatar-text');
   dom.userNameDisplay = document.getElementById('user-name-display');
   dom.clientGreetingName = document.getElementById('client-greeting-name');
@@ -483,8 +493,10 @@ function bindStaticEvents() {
   dom.portfolioTrack?.addEventListener('mouseleave', startPortfolioAutoplay);
 
   document.addEventListener('submit', handleDynamicSubmit);
+  document.addEventListener('keydown', handleGlobalKeydown);
   window.addEventListener('message', handleCalendlyWindowMessage);
   window.addEventListener('resize', syncCalendlyEmbedLayout);
+  window.addEventListener('resize', handleWindowResize);
 }
 
 async function api(path, options = {}) {
@@ -606,6 +618,7 @@ function updateNavigation() {
     dom.navActionsVisitor?.classList.remove('hidden');
     dom.navActionsAuth?.classList.add('hidden');
     applyAdminRolePresentation();
+    syncMobileNavigation();
     return;
   }
 
@@ -631,6 +644,386 @@ function updateNavigation() {
   }
 
   applyAdminRolePresentation();
+  syncMobileNavigation();
+}
+
+function handleGlobalKeydown(event) {
+  if (event.key === 'Escape' && state.mobileNavSheetOpen) {
+    closeMobileNavSheet();
+  }
+}
+
+function handleWindowResize() {
+  if (window.innerWidth > 1024 && state.mobileNavSheetOpen) {
+    closeMobileNavSheet();
+  }
+}
+
+function getActiveViewId() {
+  return document.querySelector('.view.active')?.id || 'public-view';
+}
+
+function getMobileNavigationConfig() {
+  if (!state.session) {
+    return {
+      kicker: 'Navegacion movil',
+      title: 'Explora TISNET',
+      copy: 'Accesos rapidos para revisar servicios, casos y acciones clave desde celular.',
+      primary: [
+        { key: 'home', label: 'Inicio', icon: 'home', action: 'home' },
+        { key: 'services', label: 'Servicios', icon: 'spark', action: 'services' },
+        { key: 'portfolio', label: 'Casos', icon: 'layers', action: 'portfolio' },
+        { key: 'more', label: 'Mas', icon: 'more', action: 'more', accent: true },
+      ],
+      sheet: [
+        { label: 'Contacto', description: 'Ir al formulario comercial y al newsletter.', action: 'contact' },
+        { label: 'Presupuesto web', description: 'Abrir la calculadora de presupuesto del proyecto.', action: 'pricing' },
+        { label: 'Iniciar sesion', description: 'Entrar al panel de cliente, ventas o administrador.', action: 'login' },
+        { label: 'Registrarse', description: 'Crear tu cuenta y activar diagnostico, agenda y panel.', action: 'register' },
+        { label: 'WhatsApp', description: 'Continuar la conversacion de forma directa.', action: 'whatsapp' },
+      ],
+    };
+  }
+
+  if (state.session.role === 'client') {
+    return {
+      kicker: 'Panel cliente',
+      title: 'Controla tu proyecto',
+      copy: 'Atajos moviles para revisar panel, agenda, historial y configuracion sin saturar el header.',
+      primary: [
+        { key: 'home', label: 'Inicio', icon: 'home', action: 'client-home' },
+        { key: 'panel', label: 'Panel', icon: 'panel', action: 'client-panel' },
+        { key: 'schedule', label: 'Agenda', icon: 'calendar', action: 'client-schedule' },
+        { key: 'more', label: 'Mas', icon: 'more', action: 'more', accent: true },
+      ],
+      sheet: [
+        { label: 'Diagnostico', description: 'Completar o actualizar el formulario inteligente.', action: 'client-wizard' },
+        { label: 'Historial', description: 'Revisar actividad y seguimiento del proyecto.', action: 'client-history' },
+        { label: 'Configuracion', description: 'Editar tus datos y preferencias del panel.', action: 'client-settings' },
+        { label: 'Cerrar sesion', description: 'Salir del panel actual.', action: 'logout' },
+      ],
+    };
+  }
+
+  if (state.session.role === 'sales') {
+    return {
+      kicker: 'Panel ventas',
+      title: 'Opera desde movil',
+      copy: 'CRM, clientes y accesos secundarios en una navegacion compacta y mas clara.',
+      primary: [
+        { key: 'dashboard', label: 'Panel', icon: 'panel', action: 'admin-dashboard' },
+        { key: 'crm', label: 'CRM', icon: 'analytics', action: 'admin-crm' },
+        { key: 'clients', label: 'Clientes', icon: 'users', action: 'admin-clients' },
+        { key: 'more', label: 'Mas', icon: 'more', action: 'more', accent: true },
+      ],
+      sheet: [
+        { label: 'Calendario', description: 'Ver reuniones y agenda comercial.', action: 'admin-calendar' },
+        { label: 'Reportes', description: 'Revisar metricas y actividad del equipo.', action: 'admin-reports' },
+        { label: 'Cerrar sesion', description: 'Salir del panel de ventas.', action: 'logout' },
+      ],
+    };
+  }
+
+  return {
+    kicker: 'Panel administrador',
+    title: 'Gestiona TISNET',
+    copy: 'Una navegacion movil mas ordenada para CRM, clientes y operaciones internas.',
+    primary: [
+      { key: 'dashboard', label: 'Panel', icon: 'panel', action: 'admin-dashboard' },
+      { key: 'crm', label: 'CRM', icon: 'analytics', action: 'admin-crm' },
+      { key: 'clients', label: 'Clientes', icon: 'users', action: 'admin-clients' },
+      { key: 'more', label: 'Mas', icon: 'more', action: 'more', accent: true },
+    ],
+    sheet: [
+      { label: 'Proyectos', description: 'Abrir el tablero de proyectos y tareas.', action: 'admin-projects' },
+      { label: 'Calendario', description: 'Consultar reuniones y agenda operativa.', action: 'admin-calendar' },
+      { label: 'Reportes', description: 'Ver metricas y rendimiento general.', action: 'admin-reports' },
+      { label: 'Configuracion', description: 'Editar contenido, accesos y parametros.', action: 'admin-settings' },
+      { label: 'Cerrar sesion', description: 'Salir del panel administrativo.', action: 'logout' },
+    ],
+  };
+}
+
+function getMobileIcon(icon) {
+  const icons = {
+    home: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3.5 10.5 12 4l8.5 6.5"></path>
+        <path d="M6.5 9.5V20h11V9.5"></path>
+      </svg>
+    `,
+    spark: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3.5v5"></path>
+        <path d="M12 15.5v5"></path>
+        <path d="M4.5 12h5"></path>
+        <path d="M14.5 12h5"></path>
+        <path d="m6.7 6.7 3.2 3.2"></path>
+        <path d="m14.1 14.1 3.2 3.2"></path>
+        <path d="m17.3 6.7-3.2 3.2"></path>
+        <path d="m9.9 14.1-3.2 3.2"></path>
+      </svg>
+    `,
+    layers: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 4 20 8.5 12 13 4 8.5 12 4Z"></path>
+        <path d="M4 12.5 12 17l8-4.5"></path>
+        <path d="M4 16.5 12 21l8-4.5"></path>
+      </svg>
+    `,
+    panel: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="4" width="7" height="7" rx="1.5"></rect>
+        <rect x="13.5" y="4" width="7" height="4" rx="1.5"></rect>
+        <rect x="13.5" y="11" width="7" height="9" rx="1.5"></rect>
+        <rect x="3.5" y="14" width="7" height="6" rx="1.5"></rect>
+      </svg>
+    `,
+    calendar: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3.5" y="5.5" width="17" height="15" rx="2"></rect>
+        <path d="M7.5 3.5v4"></path>
+        <path d="M16.5 3.5v4"></path>
+        <path d="M3.5 10h17"></path>
+      </svg>
+    `,
+    analytics: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 18.5h14"></path>
+        <path d="M7.5 15V10"></path>
+        <path d="M12 15V6.5"></path>
+        <path d="M16.5 15v-3.5"></path>
+        <path d="m6.5 8.5 4-3 4 2 3-2"></path>
+      </svg>
+    `,
+    users: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M8.2 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"></path>
+        <path d="M15.8 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path>
+        <path d="M3.8 19a4.6 4.6 0 0 1 8.8 0"></path>
+        <path d="M13.2 19a3.8 3.8 0 0 1 7 0"></path>
+      </svg>
+    `,
+    more: `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5 12h.01"></path>
+        <path d="M12 12h.01"></path>
+        <path d="M19 12h.01"></path>
+      </svg>
+    `,
+  };
+
+  return icons[icon] || icons.more;
+}
+
+function renderMobileNavigation() {
+  if (!dom.mobileNavDock || !dom.mobileNavSheetGrid) {
+    return;
+  }
+
+  const config = getMobileNavigationConfig();
+  const activeKey = state.mobileNavSheetOpen ? 'more' : state.mobileNavActive;
+
+  dom.mobileNavDock.innerHTML = config.primary
+    .map(
+      (item) => `
+        <button
+          class="mobile-nav-item ${item.key === activeKey ? 'is-active' : ''} ${item.accent ? 'is-accent' : ''}"
+          type="button"
+          onclick="handleMobileNavAction('${escapeAttribute(item.action)}')"
+        >
+          <span class="mobile-nav-icon">${getMobileIcon(item.icon)}</span>
+          <span class="mobile-nav-label">${escapeHtml(item.label)}</span>
+        </button>
+      `
+    )
+    .join('');
+
+  dom.mobileNavSheetKicker.textContent = config.kicker;
+  dom.mobileNavSheetTitle.textContent = config.title;
+  dom.mobileNavSheetCopy.textContent = config.copy;
+  dom.mobileNavSheetGrid.innerHTML = config.sheet
+    .map(
+      (item) => `
+        <button class="mobile-nav-sheet-action" type="button" onclick="handleMobileNavAction('${escapeAttribute(item.action)}')">
+          <div>
+            <strong>${escapeHtml(item.label)}</strong>
+            <span>${escapeHtml(item.description)}</span>
+          </div>
+          <em>→</em>
+        </button>
+      `
+    )
+    .join('');
+
+  dom.mobileNavBackdrop?.classList.toggle('hidden', !state.mobileNavSheetOpen);
+  document.body.classList.toggle('mobile-nav-sheet-open', state.mobileNavSheetOpen);
+}
+
+function normalizeMobilePrimaryKey(key) {
+  const config = getMobileNavigationConfig();
+  return config.primary.some((item) => item.key === key) ? key : config.primary[0]?.key || 'home';
+}
+
+function syncMobileNavigation() {
+  let nextKey = state.mobileNavActive;
+  const activeViewId = getActiveViewId();
+
+  if (!state.session) {
+    if (activeViewId === 'pricing-view') {
+      nextKey = 'more';
+    } else if (!['home', 'services', 'portfolio', 'more'].includes(nextKey)) {
+      nextKey = 'home';
+    }
+  } else if (state.session.role === 'client') {
+    if (activeViewId === 'client-home') {
+      nextKey = 'home';
+    } else if (activeViewId === 'client-panel-view') {
+      nextKey = state.activeClientTab === 'schedule' ? 'schedule' : 'panel';
+    } else {
+      nextKey = 'more';
+    }
+  } else if (activeViewId === 'admin-panel-view') {
+    if (state.activeAdminTab === 'crm') {
+      nextKey = 'crm';
+    } else if (state.activeAdminTab === 'clients') {
+      nextKey = 'clients';
+    } else if (state.activeAdminTab === 'dashboard') {
+      nextKey = 'dashboard';
+    } else {
+      nextKey = 'more';
+    }
+  } else {
+    nextKey = 'dashboard';
+  }
+
+  state.mobileNavActive = normalizeMobilePrimaryKey(nextKey);
+  renderMobileNavigation();
+}
+
+function closeMobileNavSheet(event) {
+  if (event && event.target !== dom.mobileNavBackdrop) {
+    return;
+  }
+
+  state.mobileNavSheetOpen = false;
+  renderMobileNavigation();
+}
+
+function toggleMobileNavSheet() {
+  state.mobileNavSheetOpen = !state.mobileNavSheetOpen;
+  renderMobileNavigation();
+}
+
+function handleMobileNavAction(action) {
+  if (action === 'more') {
+    toggleMobileNavSheet();
+    return;
+  }
+
+  state.mobileNavSheetOpen = false;
+
+  switch (action) {
+    case 'home':
+      state.mobileNavActive = 'home';
+      showView('public-view');
+      break;
+    case 'services':
+      state.mobileNavActive = 'services';
+      showPublicSection('servicios');
+      break;
+    case 'portfolio':
+      state.mobileNavActive = 'portfolio';
+      showPublicSection('portafolio');
+      break;
+    case 'contact':
+      state.mobileNavActive = 'more';
+      showPublicSection('newsletter-section');
+      break;
+    case 'pricing':
+      state.mobileNavActive = 'more';
+      openPricingCalculator();
+      break;
+    case 'login':
+      openModal('login');
+      break;
+    case 'register':
+      openModal('register');
+      break;
+    case 'whatsapp':
+      openWA('Hola TISNET, quiero avanzar desde la navegacion movil con mi proyecto.');
+      break;
+    case 'client-home':
+      state.mobileNavActive = 'home';
+      showView('client-home');
+      break;
+    case 'client-panel':
+      state.mobileNavActive = 'panel';
+      showView('client-panel-view');
+      setClientTab('overview');
+      break;
+    case 'client-schedule':
+      state.mobileNavActive = 'schedule';
+      showView('client-panel-view');
+      setClientTab('schedule');
+      break;
+    case 'client-wizard':
+      state.mobileNavActive = 'more';
+      showView('wizard-view');
+      break;
+    case 'client-history':
+      state.mobileNavActive = 'more';
+      showView('client-panel-view');
+      setClientTab('history');
+      break;
+    case 'client-settings':
+      state.mobileNavActive = 'more';
+      showView('client-panel-view');
+      setClientTab('settings');
+      break;
+    case 'admin-dashboard':
+      state.mobileNavActive = 'dashboard';
+      showView('admin-panel-view');
+      setAdminTab('dashboard');
+      break;
+    case 'admin-crm':
+      state.mobileNavActive = 'crm';
+      showView('admin-panel-view');
+      setAdminTab('crm');
+      break;
+    case 'admin-clients':
+      state.mobileNavActive = 'clients';
+      showView('admin-panel-view');
+      setAdminTab('clients');
+      break;
+    case 'admin-projects':
+      state.mobileNavActive = 'more';
+      showView('admin-panel-view');
+      setAdminTab('projects');
+      break;
+    case 'admin-calendar':
+      state.mobileNavActive = 'more';
+      showView('admin-panel-view');
+      setAdminTab('calendar');
+      break;
+    case 'admin-reports':
+      state.mobileNavActive = 'more';
+      showView('admin-panel-view');
+      setAdminTab('reports');
+      break;
+    case 'admin-settings':
+      state.mobileNavActive = 'more';
+      showView('admin-panel-view');
+      setAdminTab('settings');
+      break;
+    case 'logout':
+      logout();
+      break;
+    default:
+      break;
+  }
+
+  renderMobileNavigation();
 }
 
 function renderPublicContent() {
@@ -3064,6 +3457,8 @@ async function logout() {
   state.session = null;
   state.clientDashboard = null;
   state.adminOverview = null;
+  state.mobileNavActive = 'home';
+  state.mobileNavSheetOpen = false;
   updateNavigation();
   closeModalBg();
   closeScheduleModal();
@@ -3106,6 +3501,8 @@ function showView(viewId) {
   if (viewId === 'pricing-view') {
     updatePricingCalculator();
   }
+
+  syncMobileNavigation();
 }
 
 function setClientTab(tab, button) {
@@ -3120,6 +3517,8 @@ function setClientTab(tab, button) {
     const matching = Array.from(document.querySelectorAll('.client-sidebar .sidebar-link')).find((item) => item.textContent.toLowerCase().includes(tab === 'overview' ? 'mi proyecto' : tab === 'schedule' ? 'agendar' : tab === 'wizard' ? 'diagnóstico' : tab === 'history' ? 'historial' : 'configuración'));
     matching?.classList.add('active');
   }
+
+  syncMobileNavigation();
 }
 
 function setAdminTab(tab, button) {
@@ -3140,9 +3539,12 @@ function setAdminTab(tab, button) {
     const matching = document.querySelector(`.admin-sidebar [data-admin-tab="${tab}"]`);
     matching?.classList.add('active');
   }
+
+  syncMobileNavigation();
 }
 
 function openModal(tab = 'login') {
+  closeMobileNavSheet();
   dom.authModal.classList.remove('hidden');
   switchTab(tab);
 }
@@ -3407,12 +3809,20 @@ function handleUserPillClick() {
 }
 
 function openPricingCalculator() {
+  state.mobileNavActive = 'more';
   showView('pricing-view');
   renderPricingCalculatorShell();
   updatePricingCalculator();
 }
 
 function showPublicSection(sectionId) {
+  const mobileKeyBySection = {
+    servicios: 'services',
+    portafolio: 'portfolio',
+    'newsletter-section': 'more',
+  };
+
+  state.mobileNavActive = mobileKeyBySection[sectionId] || 'home';
   showView('public-view');
   window.requestAnimationFrame(() => {
     setTimeout(() => {
@@ -4206,3 +4616,5 @@ window.openClientCase = openClientCase;
 window.closeCaseModal = closeCaseModal;
 window.openScheduleModal = openScheduleModal;
 window.closeScheduleModal = closeScheduleModal;
+window.handleMobileNavAction = handleMobileNavAction;
+window.closeMobileNavSheet = closeMobileNavSheet;

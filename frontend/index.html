@@ -51,6 +51,24 @@
     </div>
   </nav>
 
+  <div class="mobile-nav-shell" id="mobile-nav-shell" aria-label="Navegacion movil">
+    <div class="mobile-nav-dock" id="mobile-nav-dock"></div>
+  </div>
+
+  <div class="mobile-nav-backdrop hidden" id="mobile-nav-backdrop" onclick="closeMobileNavSheet(event)">
+    <div class="mobile-nav-sheet" onclick="event.stopPropagation()">
+      <div class="mobile-nav-sheet-head">
+        <div>
+          <span class="section-label mobile-nav-sheet-kicker" id="mobile-nav-sheet-kicker">TISNET</span>
+          <h3 class="mobile-nav-sheet-title" id="mobile-nav-sheet-title">Explora el sitio</h3>
+          <p class="mobile-nav-sheet-copy" id="mobile-nav-sheet-copy">Accesos rapidos y acciones secundarias para movil.</p>
+        </div>
+        <button class="mobile-nav-sheet-close" type="button" onclick="closeMobileNavSheet()">&times;</button>
+      </div>
+      <div class="mobile-nav-sheet-grid" id="mobile-nav-sheet-grid"></div>
+    </div>
+  </div>
+
   <div id="public-view" class="view active">
     <section id="hero">
       <div class="hero-bg"></div>
