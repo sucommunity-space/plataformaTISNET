@@ -3153,8 +3153,11 @@
     }
 
     .mobile-nav-shell {
-      width: calc(100vw - 20px);
-      bottom: calc(12px + env(safe-area-inset-bottom));
+      left: 8px;
+      right: 8px;
+      width: auto;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      transform: none;
     }
 
     .mobile-nav-dock {
@@ -3252,7 +3255,10 @@
     }
 
     #hero {
-      padding-top: 92px;
+      min-height: auto;
+      justify-content: flex-start;
+      padding-top: 104px;
+      padding-bottom: 64px;
     }
 
     #client-panel,
@@ -3384,12 +3390,13 @@
 
   @media (max-width: 480px) {
     #hero {
-      padding-top: 284px;
+      padding-top: 96px;
+      padding-bottom: 56px;
     }
 
     #client-panel,
     #admin-panel {
-      padding-top: 248px;
+      padding-top: 92px;
     }
 
     .section {
