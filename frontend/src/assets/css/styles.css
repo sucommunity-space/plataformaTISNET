@@ -94,6 +94,43 @@
     transition: transform .3s ease, background .22s ease, box-shadow .22s ease, border-color .22s ease;
     will-change: transform;
   }
+
+  @media (max-width: 1024px) {
+    .landing-page-shell {
+      min-height: auto;
+      padding: 112px 0 72px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .landing-preview-card,
+    .landing-page-cta,
+    .contact-view-shell .newsletter-card {
+      padding: 24px;
+    }
+
+    .landing-page-head {
+      margin-bottom: 28px;
+    }
+
+    .landing-page-shell {
+      padding: 104px 0 64px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .landing-page-shell {
+      padding: 94px 0 56px;
+    }
+
+    .landing-preview-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .landing-preview-title {
+      font-size: 1.2rem;
+    }
+  }
   #navbar.mobile-navbar-scrolled {
     background: rgba(13,15,20,.94);
     box-shadow: 0 18px 36px rgba(0,0,0,.22);
@@ -426,6 +463,137 @@
 
   .section-head { margin-bottom: 56px; }
 
+  .landing-hub-head .section-desc {
+    max-width: 760px;
+  }
+
+  .landing-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+  }
+
+  .landing-preview-card {
+    position: relative;
+    padding: 32px;
+    border-radius: 28px;
+    border: 1px solid rgba(255,255,255,.08);
+    background:
+      radial-gradient(circle at top right, rgba(0,212,255,.12), transparent 34%),
+      linear-gradient(160deg, rgba(17,23,38,.98), rgba(9,13,22,.98));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .landing-preview-top,
+  .landing-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .landing-preview-kicker,
+  .landing-preview-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: .72rem;
+    font-weight: 700;
+    letter-spacing: .4px;
+    background: rgba(255,255,255,.06);
+  }
+
+  .landing-preview-kicker {
+    color: var(--accent);
+    background: rgba(0,212,255,.08);
+  }
+
+  .landing-preview-title {
+    font-size: 1.35rem;
+    line-height: 1.25;
+    margin: 24px 0 14px;
+  }
+
+  .landing-preview-copy {
+    color: var(--text-muted);
+    line-height: 1.75;
+  }
+
+  .landing-preview-bullets {
+    display: grid;
+    gap: 10px;
+    margin: 24px 0 28px;
+    color: var(--text-muted);
+    font-size: .92rem;
+  }
+
+  .landing-preview-bullets span {
+    position: relative;
+    padding-left: 18px;
+  }
+
+  .landing-preview-bullets span::before {
+    content: '';
+    position: absolute;
+    top: .55rem;
+    left: 0;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--accent);
+    box-shadow: 0 0 0 6px rgba(0,212,255,.09);
+  }
+
+  .landing-page-shell {
+    position: relative;
+    min-height: 100vh;
+    overflow: hidden;
+    padding: 128px 0 96px;
+    background: var(--dark);
+  }
+
+  .landing-page-body {
+    position: relative;
+    z-index: 1;
+  }
+
+  .landing-page-head {
+    max-width: 760px;
+    margin-bottom: 40px;
+  }
+
+  .landing-breadcrumb {
+    justify-content: flex-start;
+    margin-bottom: 18px;
+    color: var(--text-muted);
+    font-size: .9rem;
+  }
+
+  .landing-breadcrumb-link {
+    appearance: none;
+    background: transparent;
+    border: 0;
+    color: var(--text-inv);
+    cursor: pointer;
+    font-size: .9rem;
+    padding: 0;
+  }
+
+  .landing-breadcrumb-link:hover {
+    color: var(--accent);
+  }
+
+  .landing-page-cta {
+    margin-top: 28px;
+  }
+
+  .contact-view-shell .newsletter-section {
+    padding: 0;
+    background: transparent;
+  }
+
   /* ──────────────────────────────────────────
      SERVICES
   ────────────────────────────────────────── */
@@ -563,18 +731,18 @@
   #wabtn {
       position: fixed; bottom: 28px; right: 28px; z-index: 800;
       width: 72px; height: 72px; border-radius: 22px;
-      background: linear-gradient(160deg, rgba(69,98,246,.96), rgba(21,31,79,.96));
-      border: 1px solid rgba(255,255,255,.16); cursor: pointer;
+      background: transparent;
+      border: none; cursor: pointer;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 14px 34px rgba(0,0,0,.28);
+      box-shadow: none;
       transition: transform .25s, box-shadow .25s;
       padding: 0;
-      overflow: hidden;
+      overflow: visible;
     }
   #wabtn > span {
     display: none;
   }
-  #wabtn:hover { transform: translateY(-2px) scale(1.04); box-shadow: 0 18px 38px rgba(0,0,0,.34); }
+  #wabtn:hover { transform: translateY(-2px) scale(1.04); box-shadow: none; }
   .wa-icon-image {
       width: 100%;
       height: 100%;

@@ -395,7 +395,7 @@ function cacheDom() {
   dom.footerEmailLink = document.getElementById('footer-email-link');
   dom.heroPrimaryCta = document.getElementById('hero-primary-cta');
   dom.ctaPrimaryCta = document.getElementById('cta-primary-cta');
-  dom.footerMeetingLink = document.querySelector('.footer-col a.footer-link[href="#newsletter-section"]');
+  dom.footerMeetingLink = document.getElementById('footer-meeting-link');
   dom.caseModalMeetingCta = document.querySelector('.case-modal .action-row .btn.btn-accent');
   dom.newsletterWebsiteLabel = document.querySelector('label[for="newsletter-website"]');
   dom.newsletterWebsiteInput = document.getElementById('newsletter-website');
@@ -935,6 +935,12 @@ function syncMobileNavigation() {
   if (!state.session) {
     if (activeViewId === 'pricing-view') {
       nextKey = 'more';
+    } else if (activeViewId === 'services-view') {
+      nextKey = 'services';
+    } else if (activeViewId === 'portfolio-view') {
+      nextKey = 'portfolio';
+    } else if (activeViewId === 'contact-view') {
+      nextKey = 'more';
     } else if (!['home', 'services', 'portfolio', 'more'].includes(nextKey)) {
       nextKey = 'home';
     }
@@ -997,15 +1003,15 @@ function handleMobileNavAction(action) {
       break;
     case 'services':
       state.mobileNavActive = 'services';
-      showPublicSection('servicios');
+      showView('services-view');
       break;
     case 'portfolio':
       state.mobileNavActive = 'portfolio';
-      showPublicSection('portafolio');
+      showView('portfolio-view');
       break;
     case 'contact':
       state.mobileNavActive = 'more';
-      showPublicSection('newsletter-section');
+      showView('contact-view');
       break;
     case 'pricing':
       state.mobileNavActive = 'more';
@@ -1186,7 +1192,11 @@ function renderPublicContent() {
       .join('');
 
     window.requestAnimationFrame(syncPortfolioProgress);
-    startPortfolioAutoplay();
+    if (getActiveViewId() === 'portfolio-view') {
+      startPortfolioAutoplay();
+    } else {
+      stopPortfolioAutoplay();
+    }
   }
 
   if (dom.portfolioGrid) {
@@ -3626,6 +3636,15 @@ function showView(viewId) {
     updatePricingCalculator();
   }
 
+  if (viewId === 'portfolio-view') {
+    window.requestAnimationFrame(() => {
+      syncPortfolioProgress();
+      startPortfolioAutoplay();
+    });
+  } else {
+    stopPortfolioAutoplay();
+  }
+
   syncMobileNavigation();
 }
 
@@ -3940,6 +3959,11 @@ function openPricingCalculator() {
 }
 
 function showPublicSection(sectionId) {
+  const publicLandingBySection = {
+    servicios: 'services-view',
+    portafolio: 'portfolio-view',
+    'newsletter-section': 'contact-view',
+  };
   const mobileKeyBySection = {
     servicios: 'services',
     portafolio: 'portfolio',
@@ -3947,6 +3971,17 @@ function showPublicSection(sectionId) {
   };
 
   state.mobileNavActive = mobileKeyBySection[sectionId] || 'home';
+  const targetView = publicLandingBySection[sectionId];
+  if (targetView) {
+    showView(targetView);
+    window.requestAnimationFrame(() => {
+      setTimeout(() => {
+        document.getElementById(sectionId)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 40);
+    });
+    return;
+  }
+
   showView('public-view');
   window.requestAnimationFrame(() => {
     setTimeout(() => {
