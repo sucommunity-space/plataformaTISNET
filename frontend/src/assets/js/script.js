@@ -389,6 +389,7 @@ function cacheDom() {
 
   dom.portfolioTrack = document.getElementById('portfolio-track');
   dom.portfolioProgress = document.getElementById('portfolio-progress');
+  dom.portfolioMemoryGrid = document.getElementById('portfolio-memory-grid');
   dom.homeProjectGrid = document.getElementById('home-project-grid');
   dom.homeProjectWall = document.getElementById('home-project-wall');
   dom.clientLogos = document.getElementById('client-logos');
@@ -745,6 +746,7 @@ function getMobileNavigationConfig() {
       ],
       sheet: [
         { label: 'Contacto', description: 'Ir al formulario comercial y al newsletter.', action: 'contact' },
+        { label: 'Nosotros', description: 'Conocer al equipo que disena y ejecuta cada experiencia.', action: 'about' },
         { label: 'Presupuesto web', description: 'Abrir la calculadora de presupuesto del proyecto.', action: 'pricing' },
         { label: 'Iniciar sesion', description: 'Entrar al panel de cliente, ventas o administrador.', action: 'login' },
         { label: 'Registrarse', description: 'Crear tu cuenta y activar diagnostico, agenda y panel.', action: 'register' },
@@ -944,7 +946,7 @@ function syncMobileNavigation() {
       nextKey = 'services';
     } else if (activeViewId === 'portfolio-view') {
       nextKey = 'portfolio';
-    } else if (activeViewId === 'contact-view') {
+    } else if (activeViewId === 'contact-view' || activeViewId === 'about-view') {
       nextKey = 'more';
     } else if (!['home', 'services', 'portfolio', 'more'].includes(nextKey)) {
       nextKey = 'home';
@@ -1017,6 +1019,10 @@ function handleMobileNavAction(action) {
     case 'contact':
       state.mobileNavActive = 'more';
       showView('contact-view');
+      break;
+    case 'about':
+      state.mobileNavActive = 'more';
+      showView('about-view');
       break;
     case 'pricing':
       state.mobileNavActive = 'more';
@@ -1217,6 +1223,70 @@ function renderHomeProjectWall(portfolio) {
     .join('');
 }
 
+function buildPortfolioMemoryItems(portfolio) {
+  if (!portfolio?.length) {
+    return [];
+  }
+
+  return Array.from({ length: 12 }, (_, index) => {
+    const item = portfolio[index % portfolio.length];
+    return { ...item, memoryIndex: index };
+  });
+}
+
+function renderPortfolioMemoryGrid(portfolio) {
+  if (!dom.portfolioMemoryGrid) {
+    return;
+  }
+
+  const memoryItems = buildPortfolioMemoryItems(portfolio);
+
+  dom.portfolioMemoryGrid.innerHTML = memoryItems
+    .map((item) => {
+      const highlights = [item.highlight_1, item.highlight_2, item.highlight_3]
+        .filter(Boolean)
+        .slice(0, 2);
+      const indexLabel = String(item.memoryIndex + 1).padStart(2, '0');
+
+      return `
+        <button
+          class="portfolio-memory-card"
+          type="button"
+          aria-label="Ver proyecto ${escapeAttribute(item.title || 'TISNET')}"
+          onclick="openCaseModal('${escapeAttribute(item.slug)}')"
+        >
+          <span class="portfolio-memory-inner">
+            <span class="portfolio-memory-face portfolio-memory-front">
+              <span class="portfolio-memory-top">
+                <span>${indexLabel}</span>
+                <span>${escapeHtml(item.category || 'Proyecto digital')}</span>
+              </span>
+              <span class="portfolio-memory-screen" aria-hidden="true">
+                <span class="portfolio-memory-window">
+                  <span class="portfolio-memory-bar is-wide"></span>
+                  <span class="portfolio-memory-bar"></span>
+                  <span class="portfolio-memory-bar is-soft"></span>
+                </span>
+                <span class="portfolio-memory-icon">${escapeHtml(item.icon || '*')}</span>
+              </span>
+              <span class="portfolio-memory-hint">Pasa el mouse</span>
+            </span>
+            <span class="portfolio-memory-face portfolio-memory-back">
+              <span class="portfolio-memory-back-kicker">${escapeHtml(item.category || 'Caso TISNET')}</span>
+              <strong>${escapeHtml(item.title || 'Proyecto TISNET')}</strong>
+              <span class="portfolio-memory-copy">${escapeHtml(item.short_description || 'Solucion digital creada para crecer con mejor presencia y operacion.')}</span>
+              <span class="portfolio-memory-tags">
+                ${highlights.map((highlight) => `<em>${escapeHtml(highlight)}</em>`).join('')}
+              </span>
+              <span class="portfolio-memory-see">Ver</span>
+            </span>
+          </span>
+        </button>
+      `;
+    })
+    .join('');
+}
+
 function renderPublicContent() {
   if (!state.publicContent) {
     return;
@@ -1268,7 +1338,12 @@ function renderPublicContent() {
     dom.registerWebsiteInput.placeholder = '@tuempresa o https://instagram.com/tuempresa';
   }
 
-  if (dom.portfolioTrack) {
+  renderPortfolioMemoryGrid(portfolio);
+  if (dom.portfolioMemoryGrid) {
+    stopPortfolioAutoplay();
+  }
+
+  if (dom.portfolioTrack && !dom.portfolioMemoryGrid) {
     dom.portfolioTrack.innerHTML = portfolio
       .map(
         (item, index) => `
@@ -1312,7 +1387,7 @@ function renderPublicContent() {
     renderHomeProjectWall(portfolio);
   }
 
-  if (dom.portfolioProgress) {
+  if (dom.portfolioProgress && !dom.portfolioMemoryGrid) {
     dom.portfolioProgress.innerHTML = portfolio
       .map(
         (_, index) => `
@@ -3882,7 +3957,9 @@ function showView(viewId) {
   if (viewId === 'portfolio-view') {
     window.requestAnimationFrame(() => {
       syncPortfolioProgress();
-      startPortfolioAutoplay();
+      if (!dom.portfolioMemoryGrid) {
+        startPortfolioAutoplay();
+      }
     });
   } else {
     stopPortfolioAutoplay();

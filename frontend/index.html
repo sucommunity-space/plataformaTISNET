@@ -21,6 +21,7 @@
         <button class="nav-link" type="button" onclick="showView('services-view')">Servicios</button>
         <button class="nav-link" type="button" onclick="showView('portfolio-view')">Portafolio</button>
         <button class="nav-link" type="button" onclick="showView('contact-view')">Contacto</button>
+        <button class="nav-link" type="button" onclick="showView('about-view')">Nosotros</button>
         <button class="nav-link highlight" type="button" onclick="openPricingCalculator()">Calculadora de presupuesto web</button>
       </div>
 
@@ -158,38 +159,13 @@
       </div>
     </section>
 
-    <section class="section section-alt" id="nosotros">
+    <section class="section section-alt" id="clientes">
       <div class="container" style="text-align:center">
         <span class="section-label">Clientes que confían en nosotros</span>
         <h2 class="section-title" style="margin-top:8px">Empresas que ya escalan<br>con TISNET</h2>
         <p class="section-desc logos-caption">Cada marca te lleva a su caso relacionado para que la franja no sea decorativa.</p>
         <div class="logos-row">
           <div class="logos-track" id="client-logos"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section team-experts-section" id="equipo">
-      <div class="container">
-        <div class="section-head team-experts-head">
-          <span class="section-label">Equipo TISNET</span>
-          <h2 class="section-title">Conoce a los expertos que hacen posible cada experiencia digital</h2>
-          <p class="section-desc">
-            Estrategia, diseno, automatizacion y desarrollo trabajando como una sola unidad para que tu proyecto se vea bien, convierta mejor y quede listo para escalar.
-          </p>
-        </div>
-
-        <div class="team-experts-grid" id="team-experts-grid"></div>
-
-        <div class="team-experts-strip">
-          <div>
-            <strong>No trabajas con una sola persona.</strong>
-            <p>Tu proyecto pasa por una mirada comercial, una experiencia cuidada y una ejecucion tecnica conectada a CRM, agenda, WhatsApp y conversion.</p>
-          </div>
-          <div class="action-row">
-            <button class="btn btn-accent" type="button" onclick="openScheduleModal('public')">Conocer al equipo</button>
-            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero conocer al equipo que llevara mi proyecto.')">Hablar por WhatsApp</button>
-          </div>
         </div>
       </div>
     </section>
@@ -246,7 +222,7 @@
           </div>
           <div class="footer-col">
             <h5>Empresa</h5>
-            <a href="#nosotros" class="footer-link">Nosotros</a>
+            <button class="footer-link footer-link-button" type="button" onclick="showView('about-view')">Nosotros</button>
             <button class="footer-link footer-link-button" type="button" onclick="showView('portfolio-view')">Portafolio</button>
             <button class="footer-link footer-link-button" type="button" onclick="showView('contact-view')">Contacto comercial</button>
             <button class="footer-link footer-link-button" type="button" onclick="openPricingCalculator()">Calculadora de presupuesto web</button>
@@ -349,7 +325,15 @@
           </div>
           <span class="section-label">Portafolio</span>
           <h2 class="section-title">Casos y proyectos en una landing propia,<br>sin distraer al usuario del objetivo</h2>
-          <p class="section-desc">Esta página concentra el carrusel de casos y la transición hacia llamada, WhatsApp o cotización, para que el portafolio se comparta como un activo comercial independiente.</p>
+          <p class="section-desc">Explora los casos como un tablero interactivo: pasa el mouse por cada tarjeta para descubrir el proyecto y presiona para abrir su detalle visual.</p>
+        </div>
+
+        <div class="portfolio-memory-shell" id="portafolio">
+          <div class="portfolio-memory-intro">
+            <span class="section-label">Tablero interactivo</span>
+            <p>12 espacios visibles, estilo juego de memoria, con micro mockups que revelan categoria, impacto y acceso rapido al caso.</p>
+          </div>
+          <div class="portfolio-memory-grid" id="portfolio-memory-grid"></div>
         </div>
 
         <div class="section-actions">
@@ -360,7 +344,7 @@
           </div>
         </div>
 
-        <div class="portfolio-carousel-shell" id="portafolio">
+        <div class="portfolio-carousel-shell" id="portfolio-legacy-carousel">
           <div class="portfolio-track" id="portfolio-track"></div>
         </div>
         <div class="portfolio-progress" id="portfolio-progress"></div>
@@ -470,6 +454,52 @@
               </div>
               <p class="inline-note" id="newsletter-feedback">Cuando envíes, lo registraremos como lead y podrás continuar con agenda.</p>
             </form>
+          </div>
+        </section>
+      </div>
+    </section>
+  </div>
+
+  <div id="about-view" class="view">
+    <section class="landing-page-shell about-view-shell">
+      <div class="hero-bg"></div>
+      <div class="grid-overlay"></div>
+      <div class="container landing-page-body">
+        <div class="landing-page-head">
+          <div class="landing-breadcrumb">
+            <button class="landing-breadcrumb-link" type="button" onclick="showView('public-view')">Inicio</button>
+            <span>/</span>
+            <span>Nosotros</span>
+          </div>
+          <span class="section-label">Nosotros</span>
+          <h2 class="section-title">Equipo TISNET</h2>
+          <p class="section-desc">Conoce a los expertos que hacen posible cada experiencia digital: estrategia, diseno, automatizacion y desarrollo conectados para lanzar proyectos con presencia, conversion y orden operativo.</p>
+          <div class="action-row">
+            <button class="btn btn-accent" type="button" onclick="openScheduleModal('public')">Conocer al equipo</button>
+            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero conocer al equipo que llevara mi proyecto.')">Hablar por WhatsApp</button>
+          </div>
+        </div>
+
+        <section class="section team-experts-section about-team-section" id="equipo">
+          <div class="section-head team-experts-head">
+            <span class="section-label">Expertos TISNET</span>
+            <h2 class="section-title">Conoce a los expertos que hacen posible cada experiencia digital</h2>
+            <p class="section-desc">
+              No trabajas con una sola persona: tu proyecto pasa por una mirada comercial, una experiencia cuidada y una ejecucion tecnica conectada a CRM, agenda, WhatsApp y conversion.
+            </p>
+          </div>
+
+          <div class="team-experts-grid" id="team-experts-grid"></div>
+
+          <div class="team-experts-strip">
+            <div>
+              <strong>Una mesa de trabajo completa para tu marca.</strong>
+              <p>Unimos estrategia, UX/UI, contenido, automatizacion y backend para que cada pantalla tenga sentido comercial y cada contacto quede registrado.</p>
+            </div>
+            <div class="action-row">
+              <button class="btn btn-accent" type="button" onclick="showView('contact-view')">Solicitar propuesta</button>
+              <button class="btn btn-outline" type="button" onclick="showView('portfolio-view')">Ver proyectos</button>
+            </div>
           </div>
         </section>
       </div>
