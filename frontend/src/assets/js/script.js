@@ -364,6 +364,8 @@ async function init() {
   handleWindowScroll();
 
   await Promise.all([loadPublicContent(), syncSession()]);
+  handleAuthRedirectNotice();
+  applySessionDefaults();
   updatePricingCalculator();
 }
 
@@ -572,6 +574,7 @@ async function syncSession() {
     const payload = await api('/api/auth/session');
     state.session = payload.authenticated ? payload.user : null;
     updateNavigation();
+    applySessionDefaults();
 
     if (state.session) {
       if (state.session.role === 'client') {
@@ -663,6 +666,32 @@ function updateNavigation() {
 
   applyAdminRolePresentation();
   syncMobileNavigation();
+  applySessionDefaults();
+}
+
+function applySessionDefaults() {
+  const user = state.session;
+  if (!user || user.role !== 'client') {
+    return;
+  }
+
+  const fillIfEmpty = (element, value) => {
+    if (!element || element.value || !value) {
+      return;
+    }
+    element.value = value;
+  };
+
+  fillIfEmpty(dom.newsletterName, user.full_name);
+  fillIfEmpty(dom.newsletterEmail, user.email);
+  fillIfEmpty(document.getElementById('newsletter-company'), user.company);
+  fillIfEmpty(document.getElementById('newsletter-website'), user.website);
+  fillIfEmpty(dom.newsletterPhone, user.phone);
+  fillIfEmpty(dom.footerSubscribeName, user.full_name);
+  fillIfEmpty(dom.footerSubscribeEmail, user.email);
+  fillIfEmpty(dom.calcClientName, user.full_name);
+  fillIfEmpty(dom.calcClientEmail, user.email);
+  fillIfEmpty(dom.calcClientCompany, user.company);
 }
 
 function handleGlobalKeydown(event) {
@@ -758,15 +787,20 @@ function getMobileNavigationConfig() {
   if (state.session.role === 'client') {
     return {
       kicker: 'Panel cliente',
-      title: 'Controla tu proyecto',
-      copy: 'Atajos moviles para revisar panel, agenda, historial y configuracion sin saturar el header.',
+      title: 'Navega con tu cuenta',
+      copy: 'Explora la web completa y vuelve a tu dashboard cuando quieras sin cerrar sesion.',
       primary: [
-        { key: 'home', label: 'Inicio', icon: 'home', action: 'client-home' },
-        { key: 'panel', label: 'Panel', icon: 'panel', action: 'client-panel' },
-        { key: 'schedule', label: 'Agenda', icon: 'calendar', action: 'client-schedule' },
+        { key: 'home', label: 'Inicio', icon: 'home', action: 'home' },
+        { key: 'panel', label: 'Dashboard', icon: 'panel', action: 'client-panel' },
+        { key: 'portfolio', label: 'Casos', icon: 'layers', action: 'portfolio' },
         { key: 'more', label: 'Mas', icon: 'more', action: 'more', accent: true },
       ],
       sheet: [
+        { label: 'Servicios', description: 'Ver capacidades, soluciones y rutas recomendadas.', action: 'services' },
+        { label: 'Contacto', description: 'Enviar una solicitud asociada a tu cuenta.', action: 'contact' },
+        { label: 'Nosotros', description: 'Conocer al equipo que ejecuta la experiencia digital.', action: 'about' },
+        { label: 'Presupuesto web', description: 'Calcular y guardar una cotizacion con tu usuario.', action: 'pricing' },
+        { label: 'Agenda', description: 'Reservar o revisar reuniones desde tu dashboard.', action: 'client-schedule' },
         { label: 'Diagnostico', description: 'Completar o actualizar el formulario inteligente.', action: 'client-wizard' },
         { label: 'Historial', description: 'Revisar actividad y seguimiento del proyecto.', action: 'client-history' },
         { label: 'Configuracion', description: 'Editar tus datos y preferencias del panel.', action: 'client-settings' },
@@ -952,10 +986,12 @@ function syncMobileNavigation() {
       nextKey = 'home';
     }
   } else if (state.session.role === 'client') {
-    if (activeViewId === 'client-home') {
+    if (activeViewId === 'public-view' || activeViewId === 'client-home') {
       nextKey = 'home';
     } else if (activeViewId === 'client-panel-view') {
-      nextKey = state.activeClientTab === 'schedule' ? 'schedule' : 'panel';
+      nextKey = 'panel';
+    } else if (activeViewId === 'portfolio-view') {
+      nextKey = 'portfolio';
     } else {
       nextKey = 'more';
     }
@@ -3640,8 +3676,13 @@ async function handleNewsletterSubmit(event) {
       body: payload,
     });
     state.latestLeadId = response.lead.id;
+    if (response.user) {
+      state.session = response.user;
+      updateNavigation();
+    }
     dom.newsletterForm.reset();
     dom.newsletterService.value = 'diagnostic';
+    applySessionDefaults();
     setFeedback(dom.newsletterFeedback, 'Solicitud registrada. Puedes continuar con Calendly.', 'success');
     toast('Solicitud guardada correctamente.', 'success');
     openScheduleModal('public');
@@ -3661,16 +3702,22 @@ async function handleFooterSubscribeSubmit(event) {
     website: '',
     service_type: 'consulting',
     message: 'Quiero recibir novedades, casos de exito y oportunidades comerciales de TISNET.',
+    source: 'footer_newsletter',
   };
 
   setFeedback(dom.footerSubscribeFeedback, 'Registrando suscripcion...', 'pending');
 
   try {
-    await api('/api/public/contact', {
+    const response = await api('/api/public/contact', {
       method: 'POST',
       body: payload,
     });
+    if (response.user) {
+      state.session = response.user;
+      updateNavigation();
+    }
     dom.footerSubscribeForm.reset();
+    applySessionDefaults();
     setFeedback(dom.footerSubscribeFeedback, 'Suscripcion registrada correctamente.', 'success');
     toast('Newsletter registrado correctamente.', 'success');
   } catch (error) {
@@ -3719,7 +3766,6 @@ async function handleRegisterSubmit(event) {
     await onAuthenticated(response.user);
     closeModalBg();
     toast('Cuenta creada correctamente.', 'success');
-    showView('client-home');
   } catch (error) {
     toast(error.message, 'error');
   }
@@ -3728,10 +3774,11 @@ async function handleRegisterSubmit(event) {
 async function onAuthenticated(user) {
   state.session = user;
   updateNavigation();
+  applySessionDefaults();
 
   if (user.role === 'client') {
     await loadClientDashboard();
-    showView('client-home');
+    showView('client-panel-view');
   }
 
   if (isOperatorRole(user.role)) {
@@ -3951,6 +3998,7 @@ function showView(viewId) {
   }
 
   if (viewId === 'pricing-view') {
+    applySessionDefaults();
     updatePricingCalculator();
   }
 
@@ -4019,7 +4067,7 @@ function switchTab(tab) {
   dom.loginForm.classList.toggle('hidden', !isLogin);
   dom.registerForm.classList.toggle('hidden', isLogin);
   document.getElementById('modal-sub').textContent = isLogin
-    ? 'Accede a tu panel de cliente, ventas o administrador.'
+    ? 'Accede a tu panel y sigue navegando por todo TISNET con tu cuenta activa.'
     : 'Crea tu cuenta para activar diagnóstico, panel y agenda.';
 }
 
@@ -4027,6 +4075,49 @@ function closeModalBg(event) {
   if (!event || event.target === dom.authModal) {
     dom.authModal.classList.add('hidden');
   }
+}
+
+function togglePasswordVisibility(inputId, button) {
+  const input = document.getElementById(inputId);
+  if (!input) {
+    return;
+  }
+  const shouldShow = input.type === 'password';
+  input.type = shouldShow ? 'text' : 'password';
+  button?.classList.toggle('is-visible', shouldShow);
+  button?.setAttribute('aria-label', shouldShow ? 'Ocultar contrasena' : 'Mostrar contrasena');
+}
+
+function handleGoogleLogin() {
+  const currentPath = `${window.location.pathname}${window.location.search}${window.location.hash}` || '/';
+  window.location.href = `/api/auth/google/start?next=${encodeURIComponent(currentPath)}`;
+}
+
+function handleAuthRedirectNotice() {
+  const url = new URL(window.location.href);
+  const authStatus = url.searchParams.get('auth');
+  if (!authStatus) {
+    return;
+  }
+
+  url.searchParams.delete('auth');
+  window.history.replaceState({}, document.title, `${url.pathname}${url.search}${url.hash}`);
+
+  if (authStatus === 'google-success') {
+    toast('Sesion iniciada con Google.', 'success');
+    if (state.session?.role === 'client') {
+      showView('client-panel-view');
+    }
+    return;
+  }
+
+  const messages = {
+    'google-unconfigured': 'Google todavia no esta configurado. Agrega GOOGLE_CLIENT_ID y GOOGLE_CLIENT_SECRET en Render.',
+    'google-cancelled': 'Inicio con Google cancelado.',
+    'google-state': 'No pudimos validar la sesion de Google. Intentalo otra vez.',
+    'google-error': 'Google no pudo iniciar sesion en este momento.',
+  };
+  toast(messages[authStatus] || 'No pudimos completar el acceso con Google.', 'error');
 }
 
 function openCaseModal(slug) {
@@ -4754,6 +4845,10 @@ async function persistBudgetQuote(source = 'calculator') {
       source,
     },
   });
+  if (response.user) {
+    state.session = response.user;
+    updateNavigation();
+  }
   return response.quote;
 }
 
@@ -5137,6 +5232,8 @@ window.setAdminTab = setAdminTab;
 window.openModal = openModal;
 window.switchTab = switchTab;
 window.closeModalBg = closeModalBg;
+window.togglePasswordVisibility = togglePasswordVisibility;
+window.handleGoogleLogin = handleGoogleLogin;
 window.logout = logout;
 window.openPricingCalculator = openPricingCalculator;
 window.showPublicSection = showPublicSection;

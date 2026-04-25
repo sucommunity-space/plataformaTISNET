@@ -26,8 +26,13 @@
       </div>
 
       <div class="nav-links hidden" id="nav-client">
-        <button class="nav-link" type="button" onclick="showView('client-home')">Inicio</button>
-        <button class="nav-link highlight" type="button" onclick="showView('client-panel-view')">Mi Panel</button>
+        <button class="nav-link" type="button" onclick="showView('public-view')">Inicio</button>
+        <button class="nav-link" type="button" onclick="showView('services-view')">Servicios</button>
+        <button class="nav-link" type="button" onclick="showView('portfolio-view')">Portafolio</button>
+        <button class="nav-link" type="button" onclick="showView('contact-view')">Contacto</button>
+        <button class="nav-link" type="button" onclick="showView('about-view')">Nosotros</button>
+        <button class="nav-link" type="button" onclick="openPricingCalculator()">Calculadora de presupuesto web</button>
+        <button class="nav-link highlight" type="button" onclick="showView('client-panel-view')">Dashboard</button>
       </div>
 
       <div class="nav-links hidden" id="nav-admin">
@@ -911,49 +916,84 @@
   </button>
 
   <div class="modal-bg hidden" id="modal-bg" onclick="closeModalBg(event)">
-    <div class="modal" onclick="event.stopPropagation()">
-      <div class="modal-logo">TISNET</div>
-      <p class="modal-sub" id="modal-sub">Accede a tu panel de cliente, ventas o administrador, o regístrate para dejar listo tu proyecto.</p>
+    <div class="modal auth-modal" onclick="event.stopPropagation()">
+      <div class="auth-card-top">
+        <div>
+          <div class="modal-logo">TISNET</div>
+          <p class="modal-sub" id="modal-sub">Accede a tu panel o crea tu cuenta para guardar solicitudes, cotizaciones y progreso.</p>
+        </div>
+        <button class="auth-close-btn" type="button" onclick="closeModalBg()">×</button>
+      </div>
 
       <div class="modal-tabs">
         <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">Iniciar sesión</button>
         <button class="modal-tab" id="tab-register" type="button" onclick="switchTab('register')">Registrarse</button>
       </div>
 
-      <form id="form-login">
-        <div class="form-group">
+      <form id="form-login" class="auth-form">
+        <div class="auth-field">
           <label class="form-label" for="login-email">Email</label>
-          <input type="email" class="form-input" id="login-email" placeholder="tu@email.com" required>
+          <div class="auth-input-shell">
+            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M30.85 13.87A15 15 0 1 0 24 28.85a1 1 0 0 0-1.03-1.71A13 13 0 1 1 28.16 20.6 2.15 2.15 0 0 1 24 19.85V9a1 1 0 1 0-2 0v1.73A8 8 0 1 0 22.2 21a4.14 4.14 0 0 0 7.83.27 15.2 15.2 0 0 0 .82-7.4ZM16 22a6 6 0 1 1 6-6 6 6 0 0 1-6 6Z"/></svg>
+            <input type="email" class="auth-input" id="login-email" placeholder="tu@email.com" required>
+          </div>
         </div>
-        <div class="form-group">
+        <div class="auth-field">
           <label class="form-label" for="login-password">Contraseña</label>
-          <input type="password" class="form-input" id="login-password" placeholder="Tu contraseña" required>
+          <div class="auth-input-shell">
+            <svg viewBox="-64 0 512 512" aria-hidden="true"><path d="M336 512H48c-26.45 0-48-21.52-48-48V240c0-26.48 21.55-48 48-48h288c26.45 0 48 21.52 48 48v224c0 26.48-21.55 48-48 48ZM48 224c-8.81 0-16 7.17-16 16v224c0 8.83 7.19 16 16 16h288c8.81 0 16-7.17 16-16V240c0-8.83-7.19-16-16-16Z"/><path d="M304 224c-8.83 0-16-7.17-16-16v-80c0-52.93-43.07-96-96-96s-96 43.07-96 96v80c0 8.83-7.17 16-16 16s-16-7.17-16-16v-80C64 57.41 121.41 0 192 0s128 57.41 128 128v80c0 8.83-7.17 16-16 16Z"/></svg>
+            <input type="password" class="auth-input" id="login-password" placeholder="Tu contraseña" required>
+            <button class="auth-eye-btn" type="button" onclick="togglePasswordVisibility('login-password', this)" aria-label="Mostrar contraseña">
+              <svg viewBox="0 0 576 512" aria-hidden="true"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7a32 32 0 0 0 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1a32 32 0 0 0 0-24.6C558.7 208 527.4 156 480.6 112.6 433.5 68.8 368.8 32 288 32Zm0 368a144 144 0 1 1 0-288 144 144 0 0 1 0 288Z"/></svg>
+            </button>
+          </div>
         </div>
-        <button class="btn btn-primary modal-submit" type="submit">Entrar a mi panel</button>
+        <div class="auth-options">
+          <label class="auth-check"><input type="checkbox" id="login-remember"> Recordarme</label>
+          <button class="auth-link-btn" type="button" onclick="toast('Por ahora pide al administrador restablecer tu contraseña.', 'info')">¿Olvidaste tu contraseña?</button>
+        </div>
+        <button class="auth-submit-btn" type="submit">Entrar a mi panel</button>
+        <p class="auth-switch-copy">¿No tienes cuenta? <button type="button" onclick="switchTab('register')">Crear cuenta</button></p>
+        <div class="auth-divider"><span>O continúa con</span></div>
+        <button class="auth-google-btn" type="button" onclick="handleGoogleLogin()">
+          <svg viewBox="0 0 512 512" aria-hidden="true"><path fill="#FBBB00" d="M113.47 309.41 95.65 375.94l-65.14 1.38A255 255 0 0 1 0 256c0-42.45 10.32-82.48 28.62-117.73l57.99 10.63 25.4 57.64A152.1 152.1 0 0 0 103.82 256c0 18.79 3.4 36.8 9.65 53.41Z"/><path fill="#518EF8" d="M507.53 208.18A258 258 0 0 1 512 256c0 18.33-1.93 36.21-5.6 53.45-12.46 58.68-45.03 109.93-90.13 146.19l-73.04-3.73-10.34-64.54c29.93-17.55 53.32-45.03 65.65-77.91H261.63V208.18h245.9Z"/><path fill="#28B446" d="M416.25 455.62C372.4 490.9 316.67 512 256 512c-97.49 0-182.25-54.49-225.49-134.68l82.96-67.91c21.62 57.7 77.28 98.77 142.53 98.77 28.05 0 54.32-7.58 76.87-20.82l83.38 68.26Z"/><path fill="#F14336" d="m419.4 58.94-82.93 67.9c-23.34-14.59-50.92-23.02-80.47-23.02-66.73 0-123.43 42.96-143.97 102.72l-83.4-68.27C71.23 56.12 157.06 0 256 0c62.12 0 119.07 22.13 163.4 58.94Z"/></svg>
+          Google
+        </button>
       </form>
 
-      <form id="form-register" class="hidden">
-        <div class="form-group">
+      <form id="form-register" class="auth-form hidden">
+        <button class="auth-google-btn auth-google-register" type="button" onclick="handleGoogleLogin()">
+          <svg viewBox="0 0 512 512" aria-hidden="true"><path fill="#FBBB00" d="M113.47 309.41 95.65 375.94l-65.14 1.38A255 255 0 0 1 0 256c0-42.45 10.32-82.48 28.62-117.73l57.99 10.63 25.4 57.64A152.1 152.1 0 0 0 103.82 256c0 18.79 3.4 36.8 9.65 53.41Z"/><path fill="#518EF8" d="M507.53 208.18A258 258 0 0 1 512 256c0 18.33-1.93 36.21-5.6 53.45-12.46 58.68-45.03 109.93-90.13 146.19l-73.04-3.73-10.34-64.54c29.93-17.55 53.32-45.03 65.65-77.91H261.63V208.18h245.9Z"/><path fill="#28B446" d="M416.25 455.62C372.4 490.9 316.67 512 256 512c-97.49 0-182.25-54.49-225.49-134.68l82.96-67.91c21.62 57.7 77.28 98.77 142.53 98.77 28.05 0 54.32-7.58 76.87-20.82l83.38 68.26Z"/><path fill="#F14336" d="m419.4 58.94-82.93 67.9c-23.34-14.59-50.92-23.02-80.47-23.02-66.73 0-123.43 42.96-143.97 102.72l-83.4-68.27C71.23 56.12 157.06 0 256 0c62.12 0 119.07 22.13 163.4 58.94Z"/></svg>
+          Registrarme con Google
+        </button>
+        <div class="auth-divider"><span>O con tus datos</span></div>
+        <div class="auth-field">
           <label class="form-label" for="register-name">Nombre completo</label>
-          <input type="text" class="form-input" id="register-name" placeholder="Tu nombre completo" required>
+          <input type="text" class="form-input auth-soft-input" id="register-name" placeholder="Tu nombre completo" required>
         </div>
-        <div class="form-group">
+        <div class="auth-field">
           <label class="form-label" for="register-email">Email</label>
-          <input type="email" class="form-input" id="register-email" placeholder="tu@empresa.com" required>
+          <input type="email" class="form-input auth-soft-input" id="register-email" placeholder="tu@empresa.com" required>
         </div>
-        <div class="form-group">
+        <div class="auth-field">
           <label class="form-label" for="register-company">Empresa</label>
-          <input type="text" class="form-input" id="register-company" placeholder="Nombre de tu empresa">
+          <input type="text" class="form-input auth-soft-input" id="register-company" placeholder="Nombre de tu empresa">
         </div>
-        <div class="form-group">
+        <div class="auth-field">
           <label class="form-label" for="register-website">Red social (opcional)</label>
-          <input type="text" class="form-input" id="register-website" placeholder="@tuempresa o https://instagram.com/tuempresa">
+          <input type="text" class="form-input auth-soft-input" id="register-website" placeholder="@tuempresa o https://instagram.com/tuempresa">
         </div>
-        <div class="form-group">
+        <div class="auth-field">
           <label class="form-label" for="register-password">Contraseña</label>
-          <input type="password" class="form-input" id="register-password" placeholder="Mínimo 8 caracteres" required>
+          <div class="auth-input-shell">
+            <svg viewBox="-64 0 512 512" aria-hidden="true"><path d="M336 512H48c-26.45 0-48-21.52-48-48V240c0-26.48 21.55-48 48-48h288c26.45 0 48 21.52 48 48v224c0 26.48-21.55 48-48 48ZM48 224c-8.81 0-16 7.17-16 16v224c0 8.83 7.19 16 16 16h288c8.81 0 16-7.17 16-16V240c0-8.83-7.19-16-16-16Z"/><path d="M304 224c-8.83 0-16-7.17-16-16v-80c0-52.93-43.07-96-96-96s-96 43.07-96 96v80c0 8.83-7.17 16-16 16s-16-7.17-16-16v-80C64 57.41 121.41 0 192 0s128 57.41 128 128v80c0 8.83-7.17 16-16 16Z"/></svg>
+            <input type="password" class="auth-input" id="register-password" placeholder="Mínimo 8 caracteres" required>
+            <button class="auth-eye-btn" type="button" onclick="togglePasswordVisibility('register-password', this)" aria-label="Mostrar contraseña">
+              <svg viewBox="0 0 576 512" aria-hidden="true"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7a32 32 0 0 0 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1a32 32 0 0 0 0-24.6C558.7 208 527.4 156 480.6 112.6 433.5 68.8 368.8 32 288 32Zm0 368a144 144 0 1 1 0-288 144 144 0 0 1 0 288Z"/></svg>
+            </button>
+          </div>
         </div>
-        <button class="btn btn-accent modal-submit" type="submit">Crear cuenta gratuita</button>
+        <button class="auth-submit-btn" type="submit">Crear cuenta gratuita</button>
       </form>
 
       <p class="modal-footer">Al continuar aceptas nuestros términos de uso y política de contacto comercial.</p>

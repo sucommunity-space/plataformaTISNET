@@ -21,6 +21,12 @@ services:
         value: "false"
       - key: FLASK_SECRET_KEY
         generateValue: true
+      - key: PUBLIC_BASE_URL
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
       - key: OWNER_ADMIN_NAME
         value: Administrador Principal TISNET
       - key: OWNER_ADMIN_EMAIL

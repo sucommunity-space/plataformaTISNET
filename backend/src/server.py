@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import secrets
 import smtplib
 from contextlib import contextmanager
 from datetime import date, datetime, time, timedelta
@@ -9,8 +10,11 @@ from decimal import Decimal
 from email.message import EmailMessage
 from functools import wraps
 from io import BytesIO
+from urllib.error import HTTPError, URLError
+from urllib.parse import urlencode
+from urllib.request import Request as UrlRequest, urlopen
 
-from flask import Flask, jsonify, request, send_file, send_from_directory, session
+from flask import Flask, jsonify, redirect, request, send_file, send_from_directory, session
 from fpdf import FPDF
 from werkzeug.exceptions import BadRequest
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -94,6 +98,11 @@ DEFAULT_CLIENT_CLOSE_CALENDLY = (
     or DEFAULT_CALENDLY
 )
 CALENDLY_PERSONAL_ACCESS_TOKEN = os.getenv("CALENDLY_PERSONAL_ACCESS_TOKEN", "").strip()
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "").strip()
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "").strip()
+GOOGLE_AUTH_URL = "https://accounts.google.com/o/oauth2/v2/auth"
+GOOGLE_TOKEN_URL = "https://oauth2.googleapis.com/token"
+GOOGLE_TOKENINFO_URL = "https://oauth2.googleapis.com/tokeninfo"
 DEFAULT_OWNER_ADMIN_EMAIL = "admin@tisnet.pe"
 DEFAULT_OWNER_ADMIN_PASSWORD = "define-una-clave-admin-segura"
 DEFAULT_OWNER_SALES_EMAIL = "ventas@tisnet.pe"
@@ -1241,6 +1250,34 @@ def normalize_client_phone(value):
     return digits
 
 
+def sync_client_profile_from_data(user, data):
+    if not user or user.get("role") != "client":
+        return user
+
+    full_name = (data.get("full_name") or data.get("name") or "").strip()
+    company = (data.get("company") or "").strip()
+    website = (data.get("website") or data.get("social_profile") or "").strip()
+    phone = (data.get("phone") or "").strip()
+
+    if not any([full_name, company, website, phone]):
+        return user
+
+    execute_write(
+        """
+        UPDATE users
+        SET full_name = COALESCE(NULLIF(%s, ''), full_name),
+            company = COALESCE(NULLIF(%s, ''), company),
+            website = COALESCE(NULLIF(%s, ''), website),
+            phone = COALESCE(NULLIF(%s, ''), phone)
+        WHERE id = %s
+        """,
+        (full_name, company, website, phone, user["id"]),
+    )
+    updated_user = get_user_by_id(user["id"])
+    set_session_user(updated_user)
+    return updated_user
+
+
 def latest_lead_for_email(email):
     return fetch_one(
         """
@@ -1502,6 +1539,90 @@ def create_onboarding_project_for_user(user_id, company_name):
         ],
     )
     return project_id
+
+
+def public_base_url():
+    configured = (os.getenv("PUBLIC_BASE_URL") or os.getenv("RENDER_EXTERNAL_URL") or "").strip()
+    if configured:
+        return configured.rstrip("/")
+    proto = request.headers.get("X-Forwarded-Proto", request.scheme)
+    host = request.headers.get("X-Forwarded-Host", request.host)
+    return f"{proto}://{host}".rstrip("/")
+
+
+def google_redirect_uri():
+    return f"{public_base_url()}/api/auth/google/callback"
+
+
+def fetch_json_url(url, data=None, headers=None):
+    body = None if data is None else urlencode(data).encode("utf-8")
+    request_object = UrlRequest(url, data=body, headers=headers or {})
+    with urlopen(request_object, timeout=12) as response:
+        return json.loads(response.read().decode("utf-8"))
+
+
+def fetch_google_identity(code):
+    token_data = fetch_json_url(
+        GOOGLE_TOKEN_URL,
+        {
+            "code": code,
+            "client_id": GOOGLE_CLIENT_ID,
+            "client_secret": GOOGLE_CLIENT_SECRET,
+            "redirect_uri": google_redirect_uri(),
+            "grant_type": "authorization_code",
+        },
+        {"Content-Type": "application/x-www-form-urlencoded"},
+    )
+    id_token = token_data.get("id_token")
+    if not id_token:
+        raise ValueError("Google no devolvio el token de identidad.")
+
+    identity = fetch_json_url(f"{GOOGLE_TOKENINFO_URL}?{urlencode({'id_token': id_token})}")
+    if identity.get("aud") != GOOGLE_CLIENT_ID:
+        raise ValueError("El token de Google no pertenece a esta aplicacion.")
+    if str(identity.get("email_verified", "")).lower() not in {"true", "1"}:
+        raise ValueError("Google no pudo confirmar el correo.")
+    return identity
+
+
+def ensure_google_client_user(identity):
+    email = (identity.get("email") or "").strip().lower()
+    validate_email(email)
+
+    existing = fetch_one("SELECT id FROM users WHERE email = %s", (email,))
+    if existing:
+        return get_user_by_id(existing["id"]), False
+
+    full_name = (identity.get("name") or email.split("@")[0]).strip()
+    with db_cursor() as (connection, cursor):
+        cursor.execute("SELECT id FROM roles WHERE code = 'client'")
+        client_role_id = cursor.fetchone()[0]
+        cursor.execute(
+            """
+            INSERT INTO users (role_id, full_name, email, password_hash, company, website, phone, is_demo)
+            VALUES (%s, %s, %s, %s, '', '', '', 0) RETURNING id
+            """,
+            (
+                client_role_id,
+                full_name,
+                email,
+                generate_password_hash(f"google:{secrets.token_urlsafe(32)}"),
+            ),
+        )
+        user_id = cursor.fetchone()[0]
+        connection.commit()
+
+    create_onboarding_project_for_user(user_id, full_name)
+    return get_user_by_id(user_id), True
+
+
+def append_auth_query(target_url, status):
+    base, separator, fragment = (target_url or "/").partition("#")
+    joiner = "&" if "?" in base else "?"
+    final_url = f"{base}{joiner}auth={status}"
+    if separator:
+        final_url = f"{final_url}#{fragment}"
+    return final_url
 
 
 def save_budget_quote(data, user=None, source="calculator"):
@@ -3004,12 +3125,15 @@ def public_quote_pdf():
 def public_contact():
     require_database()
     data = request.get_json(force=True) or {}
-    lead = create_lead(data, source="newsletter", status="new", require_phone=True)
+    source = (data.get("source") or "newsletter").strip() or "newsletter"
+    user = sync_client_profile_from_data(current_user(), data)
+    lead = create_lead(data, source=source, status="new", require_phone=source != "footer_newsletter")
     settings = get_site_settings()
     return api_response(
         True,
         "Solicitud registrada correctamente.",
         lead=lead,
+        user=user,
         calendlyUrl=settings["public_calendly_url"],
     )
 
@@ -3019,8 +3143,62 @@ def public_save_quote():
     require_database()
     data = request.get_json(force=True) or {}
     source = (data.get("source") or "calculator").strip() or "calculator"
-    quote = save_budget_quote(data, user=current_user(), source=source)
-    return api_response(True, "Cotizacion guardada correctamente.", quote=quote)
+    user = current_user()
+    if user and user.get("role") == "client":
+        user = sync_client_profile_from_data(user, data.get("client") or {})
+    quote = save_budget_quote(data, user=user, source=source)
+    return api_response(True, "Cotizacion guardada correctamente.", quote=quote, user=user)
+
+
+@app.route("/api/auth/google/start")
+def google_auth_start():
+    if not GOOGLE_CLIENT_ID or not GOOGLE_CLIENT_SECRET:
+        return redirect("/?auth=google-unconfigured")
+
+    next_url = (request.args.get("next") or "/").strip()
+    if not next_url.startswith("/") or next_url.startswith("//"):
+        next_url = "/"
+
+    oauth_state = secrets.token_urlsafe(24)
+    session["google_oauth_state"] = oauth_state
+    session["google_oauth_next"] = next_url
+
+    params = {
+        "client_id": GOOGLE_CLIENT_ID,
+        "redirect_uri": google_redirect_uri(),
+        "response_type": "code",
+        "scope": "openid email profile",
+        "state": oauth_state,
+        "access_type": "online",
+        "prompt": "select_account",
+    }
+    return redirect(f"{GOOGLE_AUTH_URL}?{urlencode(params)}")
+
+
+@app.route("/api/auth/google/callback")
+def google_auth_callback():
+    require_database()
+    if request.args.get("error"):
+        return redirect("/?auth=google-cancelled")
+
+    expected_state = session.get("google_oauth_state")
+    if not expected_state or request.args.get("state") != expected_state:
+        return redirect("/?auth=google-state")
+
+    code = request.args.get("code")
+    if not code:
+        return redirect("/?auth=google-error")
+
+    try:
+        identity = fetch_google_identity(code)
+        user, _created = ensure_google_client_user(identity)
+        set_session_user(user)
+        next_url = session.pop("google_oauth_next", "/") or "/"
+        session.pop("google_oauth_state", None)
+        return redirect(append_auth_query(next_url, "google-success"))
+    except (ValueError, HTTPError, URLError, TimeoutError) as exc:
+        logger.exception("No se pudo iniciar sesion con Google: %s", exc)
+        return redirect("/?auth=google-error")
 
 
 @app.route("/api/auth/register", methods=["POST"])
