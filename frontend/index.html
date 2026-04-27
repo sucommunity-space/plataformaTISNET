@@ -1,1045 +1,2177 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>TISNET - Tecnología y Creatividad Digital</title>
-  <meta name="theme-color" content="#4562f6">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20260422b">
-  <link rel="icon" type="image/png" href="img/tisnet-logo.png?v=20260422b">
-  <link rel="apple-touch-icon" href="img/tisnet-logo.png?v=20260422b">
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="src/assets/css/styles.css">
-</head>
-<body>
-  <nav id="navbar">
-    <div class="nav-inner">
-      <button class="nav-logo nav-logo-btn" type="button" onclick="showView('public-view')">TISNET</button>
-
-      <div class="nav-links" id="nav-visitor">
-        <button class="nav-link" type="button" onclick="showView('public-view')">Inicio</button>
-        <button class="nav-link" type="button" onclick="showView('services-view')">Servicios</button>
-        <button class="nav-link" type="button" onclick="showView('portfolio-view')">Portafolio</button>
-        <button class="nav-link" type="button" onclick="showView('contact-view')">Contacto</button>
-        <button class="nav-link" type="button" onclick="showView('about-view')">Nosotros</button>
-        <button class="nav-link highlight" type="button" onclick="openPricingCalculator()">Calculadora de presupuesto web</button>
-      </div>
-
-      <div class="nav-links hidden" id="nav-client">
-        <button class="nav-link" type="button" onclick="showView('public-view')">Inicio</button>
-        <button class="nav-link" type="button" onclick="showView('services-view')">Servicios</button>
-        <button class="nav-link" type="button" onclick="showView('portfolio-view')">Portafolio</button>
-        <button class="nav-link" type="button" onclick="showView('contact-view')">Contacto</button>
-        <button class="nav-link" type="button" onclick="showView('about-view')">Nosotros</button>
-        <button class="nav-link" type="button" onclick="openPricingCalculator()">Calculadora de presupuesto web</button>
-        <button class="nav-link highlight" type="button" onclick="showView('client-panel-view')">Dashboard</button>
-      </div>
-
-      <div class="nav-links hidden" id="nav-admin">
-        <button class="nav-link highlight" type="button" onclick="showView('admin-panel-view')">Dashboard</button>
-      </div>
-
-      <div class="nav-links hidden" id="nav-sales">
-        <button class="nav-link highlight" type="button" onclick="showView('admin-panel-view')">Panel ventas</button>
-      </div>
-
-      <div class="nav-actions" id="nav-actions-visitor">
-        <button class="btn btn-outline" type="button" onclick="openModal('login')">Iniciar sesión</button>
-        <button class="btn btn-accent" type="button" onclick="openModal('register')">Registrarse</button>
-      </div>
-
-      <div class="nav-actions hidden" id="nav-actions-auth">
-        <button class="user-pill" id="user-pill" type="button" onclick="handleUserPillClick()">
-          <div class="user-avatar" id="user-avatar-text">CL</div>
-          <span id="user-name-display">Cliente Demo</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TISNET - Tecnología y Creatividad Digital</title>
+    <meta name="theme-color" content="#4562f6" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20260422b" />
+    <link rel="icon" type="image/png" href="img/tisnet-logo.png?v=20260422b" />
+    <link rel="apple-touch-icon" href="img/tisnet-logo.png?v=20260422b" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="src/assets/css/styles.css" />
+  </head>
+  <body>
+    <nav id="navbar">
+      <div class="nav-inner">
+        <button
+          class="nav-logo nav-logo-btn"
+          type="button"
+          onclick="showView('public-view')"
+        >
+          TISNET
         </button>
-        <button class="btn btn-ghost" type="button" onclick="logout()">Salir</button>
-      </div>
 
-      <div class="mobile-nav-shell" id="mobile-nav-shell" aria-label="Navegacion movil principal">
-        <div class="mobile-nav-dock" id="mobile-nav-dock"></div>
-      </div>
-    </div>
-  </nav>
-
-  <div class="mobile-nav-backdrop hidden" id="mobile-nav-backdrop" onclick="closeMobileNavSheet(event)">
-    <div class="mobile-nav-sheet" onclick="event.stopPropagation()">
-      <div class="mobile-nav-sheet-head">
-        <div>
-          <span class="section-label mobile-nav-sheet-kicker" id="mobile-nav-sheet-kicker">TISNET</span>
-          <h3 class="mobile-nav-sheet-title" id="mobile-nav-sheet-title">Explora el sitio</h3>
-          <p class="mobile-nav-sheet-copy" id="mobile-nav-sheet-copy">Accesos rapidos y acciones secundarias para movil.</p>
-        </div>
-        <button class="mobile-nav-sheet-close" type="button" onclick="closeMobileNavSheet()">&times;</button>
-      </div>
-      <div class="mobile-nav-sheet-grid" id="mobile-nav-sheet-grid"></div>
-    </div>
-  </div>
-
-  <div id="public-view" class="view active">
-    <section id="hero">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container hero-content">
-        <div class="hero-eyebrow">Agencia digital certificada · Lima, Perú</div>
-        <h1 class="hero-title">
-          Transformamos ideas<br>en <span>sistemas digitales</span><br>que escalan.
-        </h1>
-        <p class="hero-desc">
-          Desarrollamos plataformas web, automatizamos procesos comerciales e integramos CRM para que tu negocio crezca con orden, visibilidad y resultados.
-        </p>
-        <div class="hero-signal-row">
-          <div class="hero-signal">Calendly integrado y listo para agendar</div>
-          <div class="hero-signal">Leads centralizados en el CRM</div>
-          <div class="hero-signal">WhatsApp, reportes y automatizacion</div>
-        </div>
-        <div class="hero-actions">
-          <button class="btn btn-accent" id="hero-primary-cta" type="button" onclick="openScheduleModal('public')">
-            Solicita tu reunion
+        <div class="nav-links" id="nav-visitor">
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('public-view')"
+          >
+            Inicio
           </button>
-          <button class="btn btn-outline" type="button" onclick="showView('portfolio-view')">Ver portafolio</button>
-          <button class="btn btn-outline" type="button" onclick="openPricingCalculator()">Calcular presupuesto</button>
-          <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero conversar por WhatsApp sobre mi proyecto web.')">Hablar por WhatsApp</button>
-        </div>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-num">+50</span>
-            <span class="stat-label">Proyectos entregados</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-num">98%</span>
-            <span class="stat-label">Satisfacción cliente</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-num">10d</span>
-            <span class="stat-label">Tiempo promedio entrega</span>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="home-showcase-section" id="home-projects-section">
-      <div class="home-showcase-bg" aria-hidden="true">
-        <div class="home-showcase-wall" id="home-project-wall"></div>
-      </div>
-      <div class="container home-showcase-overlay">
-        <div class="home-showcase-focus">
-          <span class="section-label">Proyectos destacados</span>
-          <h2 class="section-title">Ellos comenzaron su presencia digital con nuestro apoyo</h2>
-          <p class="section-desc home-showcase-desc">
-            Una muestra visual de sitios, dashboards, CRM y automatizaciones construidas por TISNET para marcas que necesitaban crecer con mejor presentacion, operacion y conversion.
-          </p>
-          <div class="home-showcase-tags" aria-label="Tipos de proyectos destacados">
-            <span>Sitios web</span>
-            <span>E-commerce</span>
-            <span>CRM</span>
-            <span>Automatizacion</span>
-            <span>Dashboards</span>
-          </div>
-          <div class="home-showcase-actions">
-            <button class="btn btn-accent" type="button" onclick="openScheduleModal('public')">Agendemos una reunion</button>
-            <button class="btn btn-outline" type="button" onclick="showView('portfolio-view')">Ver portafolio completo</button>
-          </div>
-        </div>
-      </div>
-      <div class="container home-showcase-legacy">
-        <div class="section-head">
-          <span class="section-label">Proyectos destacados</span>
-          <h2 class="section-title">Algunos proyectos para mostrar<br>el nivel visual y técnico de TISNET</h2>
-          <p class="section-desc">El inicio ahora se enfoca en una muestra breve de casos destacados. Servicios, portafolio completo y contacto quedan en sus propias landings para no recargar esta primera pantalla.</p>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('services-view')"
+          >
+            Servicios
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('portfolio-view')"
+          >
+            Portafolio
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('contact-view')"
+          >
+            Contacto
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('about-view')"
+          >
+            Nosotros
+          </button>
+          <button
+            class="nav-link highlight"
+            type="button"
+            onclick="openPricingCalculator()"
+          >
+            Calculadora de presupuesto web
+          </button>
         </div>
 
-        <div class="portfolio-grid home-project-grid" id="home-project-grid"></div>
+        <div class="nav-links hidden" id="nav-client">
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('public-view')"
+          >
+            Inicio
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('services-view')"
+          >
+            Servicios
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('portfolio-view')"
+          >
+            Portafolio
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('contact-view')"
+          >
+            Contacto
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="showView('about-view')"
+          >
+            Nosotros
+          </button>
+          <button
+            class="nav-link"
+            type="button"
+            onclick="openPricingCalculator()"
+          >
+            Calculadora de presupuesto web
+          </button>
+          <button
+            class="nav-link highlight"
+            type="button"
+            onclick="showView('client-panel-view')"
+          >
+            Dashboard
+          </button>
+        </div>
 
-        <div class="portfolio-cta-strip home-projects-cta">
+        <div class="nav-links hidden" id="nav-admin">
+          <button
+            class="nav-link highlight"
+            type="button"
+            onclick="showView('admin-panel-view')"
+          >
+            Dashboard
+          </button>
+        </div>
+
+        <div class="nav-links hidden" id="nav-sales">
+          <button
+            class="nav-link highlight"
+            type="button"
+            onclick="showView('admin-panel-view')"
+          >
+            Panel ventas
+          </button>
+        </div>
+
+        <div class="nav-actions" id="nav-actions-visitor">
+          <button
+            class="btn btn-outline"
+            type="button"
+            onclick="openModal('login')"
+          >
+            Iniciar sesión
+          </button>
+          <button
+            class="btn btn-accent"
+            type="button"
+            onclick="openModal('register')"
+          >
+            Registrarse
+          </button>
+        </div>
+
+        <div class="nav-actions hidden" id="nav-actions-auth">
+          <button
+            class="user-pill"
+            id="user-pill"
+            type="button"
+            onclick="handleUserPillClick()"
+          >
+            <div class="user-avatar" id="user-avatar-text">CL</div>
+            <span id="user-name-display">Cliente Demo</span>
+          </button>
+          <button class="btn btn-ghost" type="button" onclick="logout()">
+            Salir
+          </button>
+        </div>
+
+        <div
+          class="mobile-nav-shell"
+          id="mobile-nav-shell"
+          aria-label="Navegacion movil principal"
+        >
+          <div class="mobile-nav-dock" id="mobile-nav-dock"></div>
+        </div>
+      </div>
+    </nav>
+
+    <div
+      class="mobile-nav-backdrop hidden"
+      id="mobile-nav-backdrop"
+      onclick="closeMobileNavSheet(event)"
+    >
+      <div class="mobile-nav-sheet" onclick="event.stopPropagation()">
+        <div class="mobile-nav-sheet-head">
           <div>
-            <strong>Si quieres ver el catálogo completo de casos, entra al portafolio.</strong>
-            <p>El home queda limpio y directo, mientras que la landing de portafolio concentra todos los proyectos, contextos y CTA de cotización.</p>
+            <span
+              class="section-label mobile-nav-sheet-kicker"
+              id="mobile-nav-sheet-kicker"
+              >TISNET</span
+            >
+            <h3 class="mobile-nav-sheet-title" id="mobile-nav-sheet-title">
+              Explora el sitio
+            </h3>
+            <p class="mobile-nav-sheet-copy" id="mobile-nav-sheet-copy">
+              Accesos rapidos y acciones secundarias para movil.
+            </p>
           </div>
-          <div class="action-row">
-            <button class="btn btn-accent" type="button" onclick="showView('portfolio-view')">Ver todo el portafolio</button>
-            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, vi sus proyectos destacados y quiero conversar sobre uno parecido.')">Hablar por WhatsApp</button>
+          <button
+            class="mobile-nav-sheet-close"
+            type="button"
+            onclick="closeMobileNavSheet()"
+          >
+            &times;
+          </button>
+        </div>
+        <div class="mobile-nav-sheet-grid" id="mobile-nav-sheet-grid"></div>
+      </div>
+    </div>
+
+    <div id="public-view" class="view active">
+      <section id="hero">
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container hero-content">
+          <div class="hero-eyebrow">
+            Agencia digital certificada · Lima, Perú
           </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-alt" id="clientes">
-      <div class="container" style="text-align:center">
-        <span class="section-label">Clientes que confían en nosotros</span>
-        <h2 class="section-title" style="margin-top:8px">Empresas que ya escalan<br>con TISNET</h2>
-        <p class="section-desc logos-caption">Cada marca te lleva a su caso relacionado para que la franja no sea decorativa.</p>
-        <div class="logos-row">
-          <div class="logos-track" id="client-logos"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="section">
-      <div class="container">
-        <div class="cta-box">
-          <span class="section-label">¿Listo para crecer?</span>
-          <h2 class="section-title" style="margin-top:8px">Tu próximo sistema digital<br>empieza aquí</h2>
-          <p class="cta-text">
-            Agenda una reunión inicial, cuéntanos tu objetivo y deja listo el siguiente paso desde el calendario integrado.
+          <h1 class="hero-title">
+            Transformamos ideas<br />en <span>sistemas digitales</span><br />que
+            escalan.
+          </h1>
+          <p class="hero-desc">
+            Desarrollamos plataformas web, automatizamos procesos comerciales e
+            integramos CRM para que tu negocio crezca con orden, visibilidad y
+            resultados.
           </p>
-          <div class="action-row action-row-center">
-            <button class="btn btn-accent" id="cta-primary-cta" type="button" onclick="openScheduleModal('public')">
-              Comenzar ahora
+          <div class="hero-signal-row">
+            <div class="hero-signal">
+              Calendly integrado y listo para agendar
+            </div>
+            <div class="hero-signal">Leads centralizados en el CRM</div>
+            <div class="hero-signal">WhatsApp, reportes y automatizacion</div>
+          </div>
+          <div class="hero-actions">
+            <button
+              class="btn btn-accent"
+              id="hero-primary-cta"
+              type="button"
+              onclick="openScheduleModal('public')"
+            >
+              Solicita tu reunion
             </button>
-            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero avanzar por WhatsApp con mi sistema digital.')">Hablar por WhatsApp</button>
+            <button
+              class="btn btn-outline"
+              type="button"
+              onclick="showView('portfolio-view')"
+            >
+              Ver portafolio
+            </button>
+            <button
+              class="btn btn-outline"
+              type="button"
+              onclick="openPricingCalculator()"
+            >
+              Calcular presupuesto
+            </button>
+            <button
+              class="btn btn-outline btn-whatsapp-inline"
+              type="button"
+              onclick="
+                openWA(
+                  'Hola TISNET, quiero conversar por WhatsApp sobre mi proyecto web.',
+                )
+              "
+            >
+              Hablar por WhatsApp
+            </button>
+          </div>
+          <div class="hero-stats">
+            <div class="stat-item">
+              <span class="stat-num">+50</span>
+              <span class="stat-label">Proyectos entregados</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">98%</span>
+              <span class="stat-label">Satisfacción cliente</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-num">10d</span>
+              <span class="stat-label">Tiempo promedio entrega</span>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <footer>
-      <div class="container">
-        <div class="footer-newsletter-shell">
-          <div class="footer-newsletter-copy">
-            <span class="section-label">Newsletter</span>
-            <h3>Suscribete y recibe ideas, novedades y casos de exito.</h3>
-            <p>Dejanos tu nombre y correo para enviarte contenido util sobre paginas web, ecommerce, automatizacion y crecimiento digital.</p>
+      <section class="home-showcase-section" id="home-projects-section">
+        <div class="home-showcase-bg" aria-hidden="true">
+          <div class="home-showcase-wall" id="home-project-wall"></div>
+        </div>
+        <div class="container home-showcase-overlay">
+          <div class="home-showcase-focus">
+            <span class="section-label">Proyectos destacados</span>
+            <h2 class="section-title">
+              Ellos comenzaron su presencia digital con nuestro apoyo
+            </h2>
+            <p class="section-desc home-showcase-desc">
+              Una muestra visual de sitios, dashboards, CRM y automatizaciones
+              construidas por TISNET para marcas que necesitaban crecer con
+              mejor presentacion, operacion y conversion.
+            </p>
+            <div
+              class="home-showcase-tags"
+              aria-label="Tipos de proyectos destacados"
+            >
+              <span>Sitios web</span>
+              <span>E-commerce</span>
+              <span>CRM</span>
+              <span>Automatizacion</span>
+              <span>Dashboards</span>
+            </div>
+            <div class="home-showcase-actions">
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="openScheduleModal('public')"
+              >
+                Agendemos una reunion
+              </button>
+              <button
+                class="btn btn-outline"
+                type="button"
+                onclick="showView('portfolio-view')"
+              >
+                Ver portafolio completo
+              </button>
+            </div>
           </div>
-          <form id="footer-subscribe-form" class="footer-subscribe-form">
-            <div class="footer-subscribe-grid">
-              <input class="form-input" id="footer-subscribe-name" name="full_name" type="text" placeholder="Tu nombre" required>
-              <input class="form-input" id="footer-subscribe-email" name="email" type="email" placeholder="tu@empresa.com" required>
+        </div>
+        <div class="container home-showcase-legacy">
+          <div class="section-head">
+            <span class="section-label">Proyectos destacados</span>
+            <h2 class="section-title">
+              Algunos proyectos para mostrar<br />el nivel visual y técnico de
+              TISNET
+            </h2>
+            <p class="section-desc">
+              El inicio ahora se enfoca en una muestra breve de casos
+              destacados. Servicios, portafolio completo y contacto quedan en
+              sus propias landings para no recargar esta primera pantalla.
+            </p>
+          </div>
+
+          <div
+            class="portfolio-grid home-project-grid"
+            id="home-project-grid"
+          ></div>
+
+          <div class="portfolio-cta-strip home-projects-cta">
+            <div>
+              <strong
+                >Si quieres ver el catálogo completo de casos, entra al
+                portafolio.</strong
+              >
+              <p>
+                El home queda limpio y directo, mientras que la landing de
+                portafolio concentra todos los proyectos, contextos y CTA de
+                cotización.
+              </p>
             </div>
             <div class="action-row">
-              <button class="btn btn-accent" type="submit">Recibir novedades</button>
-              <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero recibir novedades y tambien conversar por WhatsApp.')">WhatsApp</button>
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="showView('portfolio-view')"
+              >
+                Ver todo el portafolio
+              </button>
+              <button
+                class="btn btn-outline btn-whatsapp-inline"
+                type="button"
+                onclick="
+                  openWA(
+                    'Hola TISNET, vi sus proyectos destacados y quiero conversar sobre uno parecido.',
+                  )
+                "
+              >
+                Hablar por WhatsApp
+              </button>
             </div>
-            <p class="inline-note" id="footer-subscribe-feedback">Lo registraremos en tu CRM comercial como un contacto interesado.</p>
-          </form>
-        </div>
-        <div class="footer-grid">
-          <div class="footer-brand">
-            <div class="nav-logo" style="font-size:1.3rem">TISNET</div>
-            <p id="footer-tagline">Agencia integral de tecnología y creatividad. Transformamos ideas en sistemas digitales escalables.</p>
-          </div>
-          <div class="footer-col">
-            <h5>Servicios</h5>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('services-view')">Desarrollo Web</button>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('services-view')">E-commerce</button>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('services-view')">CRM y ERP</button>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('services-view')">Automatización</button>
-          </div>
-          <div class="footer-col">
-            <h5>Empresa</h5>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('about-view')">Nosotros</button>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('portfolio-view')">Portafolio</button>
-            <button class="footer-link footer-link-button" type="button" onclick="showView('contact-view')">Contacto comercial</button>
-            <button class="footer-link footer-link-button" type="button" onclick="openPricingCalculator()">Calculadora de presupuesto web</button>
-          </div>
-          <div class="footer-col">
-            <h5>Contacto</h5>
-            <button class="footer-link footer-link-button" id="footer-meeting-link" type="button" onclick="showView('contact-view')">Solicitar reunion</button>
-            <a href="mailto:hola@tisnet.pe" class="footer-link" id="footer-email-link">hola@tisnet.pe</a>
-            <button class="footer-link footer-link-button" type="button" onclick="openWA()">WhatsApp</button>
           </div>
         </div>
-        <div class="footer-bottom">
-          <p>© 2026 TISNET. Todos los derechos reservados.</p>
-          <p>Diseñado y desarrollado por TISNET</p>
-        </div>
-      </div>
-    </footer>
-  </div>
+      </section>
 
-  <div id="services-view" class="view">
-    <section class="landing-page-shell">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container landing-page-body">
-        <div class="landing-page-head">
-          <div class="landing-breadcrumb">
-            <button class="landing-breadcrumb-link" type="button" onclick="showView('public-view')">Inicio</button>
-            <span>/</span>
-            <span>Servicios</span>
-          </div>
-          <span class="section-label">Servicios</span>
-          <h2 class="section-title">Una landing separada para vender mejor<br>cada capacidad de TISNET</h2>
-          <p class="section-desc">Esta página concentra la oferta, la propuesta de valor y la ruta recomendada para que el cliente entienda rápido qué resuelve TISNET y cuál es el siguiente paso correcto.</p>
-          <div class="action-row">
-            <button class="btn btn-accent" type="button" onclick="openPricingCalculator()">Construir presupuesto</button>
-            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero revisar sus servicios y definir la solucion correcta para mi negocio.')">WhatsApp</button>
+      <section class="section section-alt" id="clientes">
+        <div class="container" style="text-align: center">
+          <span class="section-label">Clientes que confían en nosotros</span>
+          <h2 class="section-title" style="margin-top: 8px">
+            Empresas que ya escalan<br />con TISNET
+          </h2>
+          <p class="section-desc logos-caption">
+            Cada marca te lleva a su caso relacionado para que la franja no sea
+            decorativa.
+          </p>
+          <div class="logos-row">
+            <div class="logos-track" id="client-logos"></div>
           </div>
         </div>
+      </section>
 
-        <div class="services-grid" id="servicios">
-          <article class="service-card">
-            <div class="service-icon">🌐</div>
-            <h3 class="service-title">Desarrollo Tecnológico</h3>
-            <p class="service-desc">Páginas web, e-commerce, sistemas a medida e integraciones con plataformas como CRM y ERP.</p>
-            <div class="service-tags">
-              <span class="service-tag">Web</span>
-              <span class="service-tag">E-commerce</span>
-              <span class="service-tag">CRM / ERP</span>
+      <section class="section">
+        <div class="container">
+          <div class="cta-box">
+            <span class="section-label">¿Listo para crecer?</span>
+            <h2 class="section-title" style="margin-top: 8px">
+              Tu próximo sistema digital<br />empieza aquí
+            </h2>
+            <p class="cta-text">
+              Agenda una reunión inicial, cuéntanos tu objetivo y deja listo el
+              siguiente paso desde el calendario integrado.
+            </p>
+            <div class="action-row action-row-center">
+              <button
+                class="btn btn-accent"
+                id="cta-primary-cta"
+                type="button"
+                onclick="openScheduleModal('public')"
+              >
+                Comenzar ahora
+              </button>
+              <button
+                class="btn btn-outline btn-whatsapp-inline"
+                type="button"
+                onclick="
+                  openWA(
+                    'Hola TISNET, quiero avanzar por WhatsApp con mi sistema digital.',
+                  )
+                "
+              >
+                Hablar por WhatsApp
+              </button>
             </div>
-          </article>
-
-          <article class="service-card">
-            <div class="service-icon">⚡</div>
-            <h3 class="service-title">Automatización Comercial</h3>
-            <p class="service-desc">Flujos para captación, seguimiento, onboarding y reuniones comerciales con menos trabajo manual.</p>
-            <div class="service-tags">
-              <span class="service-tag">Lead nurturing</span>
-              <span class="service-tag">Workflows</span>
-              <span class="service-tag">Agenda</span>
-            </div>
-          </article>
-
-          <article class="service-card">
-            <div class="service-icon">🎨</div>
-            <h3 class="service-title">Branding y Diseño</h3>
-            <p class="service-desc">Identidad visual, sistema gráfico y piezas comerciales que sostienen la presencia digital de tu negocio.</p>
-            <div class="service-tags">
-              <span class="service-tag">Branding</span>
-              <span class="service-tag">Identidad</span>
-              <span class="service-tag">Diseño</span>
-            </div>
-          </article>
-        </div>
-
-        <div class="service-callout landing-page-cta">
-          <div>
-            <span class="section-label">Ruta recomendada</span>
-            <h3>No sabes si necesitas landing, ecommerce, CRM o una plataforma completa?</h3>
-            <p>Te ayudamos a definir la arquitectura correcta para que el presupuesto, el backend y la experiencia comercial nazcan bien desde el inicio.</p>
-          </div>
-          <div class="action-row">
-            <button class="btn btn-accent" type="button" onclick="showView('contact-view')">Hablar con TISNET</button>
-            <button class="btn btn-outline" type="button" onclick="showView('portfolio-view')">Ver proyectos</button>
           </div>
         </div>
-      </div>
-    </section>
-  </div>
+      </section>
 
-  <div id="portfolio-view" class="view">
-    <section class="landing-page-shell">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container landing-page-body">
-        <div class="landing-page-head">
-          <div class="landing-breadcrumb">
-            <button class="landing-breadcrumb-link" type="button" onclick="showView('public-view')">Inicio</button>
-            <span>/</span>
-            <span>Portafolio</span>
-          </div>
-          <span class="section-label">Portafolio</span>
-          <h2 class="section-title">Casos y proyectos en una landing propia,<br>sin distraer al usuario del objetivo</h2>
-          <p class="section-desc">Explora los casos como un tablero interactivo: pasa el mouse por cada tarjeta para descubrir el proyecto y presiona para abrir su detalle visual.</p>
-        </div>
-
-        <div class="portfolio-memory-shell" id="portafolio">
-          <div class="portfolio-memory-intro">
-            <span class="section-label">Tablero interactivo</span>
-            <p>12 espacios visibles, estilo juego de memoria, con micro mockups que revelan categoria, impacto y acceso rapido al caso.</p>
-          </div>
-          <div class="portfolio-memory-grid" id="portfolio-memory-grid"></div>
-        </div>
-
-        <div class="section-actions">
-          <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero un proyecto similar a los que muestran en su portafolio.')">Quiero un proyecto asi</button>
-          <div class="portfolio-controls">
-            <button class="portfolio-control" type="button" onclick="scrollPortfolio(-1)" aria-label="Proyecto anterior">‹</button>
-            <button class="portfolio-control" type="button" onclick="scrollPortfolio(1)" aria-label="Proyecto siguiente">›</button>
-          </div>
-        </div>
-
-        <div class="portfolio-carousel-shell" id="portfolio-legacy-carousel">
-          <div class="portfolio-track" id="portfolio-track"></div>
-        </div>
-        <div class="portfolio-progress" id="portfolio-progress"></div>
-
-        <div class="portfolio-cta-strip landing-page-cta">
-          <div>
-            <strong>Quieres algo igual de potente para tu marca?</strong>
-            <p>Te guiamos desde la identidad visual hasta la automatizacion comercial y el backend interno.</p>
-          </div>
-          <div class="action-row">
-            <button class="btn btn-accent" type="button" onclick="openScheduleModal('public')">Agendar llamada</button>
-            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, vi su portafolio y quiero cotizar un proyecto parecido.')">Cotizar por WhatsApp</button>
-          </div>
-        </div>
-      </div>
-    </section>
-  </div>
-
-  <div id="contact-view" class="view">
-    <section class="landing-page-shell contact-view-shell">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container landing-page-body">
-        <div class="landing-page-head">
-          <div class="landing-breadcrumb">
-            <button class="landing-breadcrumb-link" type="button" onclick="showView('public-view')">Inicio</button>
-            <span>/</span>
-            <span>Contacto</span>
-          </div>
-          <span class="section-label">Contacto</span>
-          <h2 class="section-title">Una landing pensada para convertir<br>interés en conversación real</h2>
-          <p class="section-desc">Aquí se concentra el formulario comercial, el registro del lead, el salto a Calendly y la continuación por WhatsApp en un flujo más limpio y orientado a venta.</p>
-        </div>
-
-        <section class="section section-alt newsletter-section" id="newsletter-section">
-          <div class="newsletter-card">
-            <div class="newsletter-copy">
-              <span class="section-label">Solicitar Servicio</span>
-              <h2 class="section-title">Cuéntanos tu proyecto<br>y activamos el siguiente paso</h2>
-              <p class="section-desc">
-                Este formulario guarda la solicitud en PostgreSQL, registra un lead para el CRM y deja lista la transición hacia Calendly y correo.
+      <footer>
+        <div class="container">
+          <div class="footer-newsletter-shell">
+            <div class="footer-newsletter-copy">
+              <span class="section-label">Newsletter</span>
+              <h3>Suscribete y recibe ideas, novedades y casos de exito.</h3>
+              <p>
+                Dejanos tu nombre y correo para enviarte contenido util sobre
+                paginas web, ecommerce, automatizacion y crecimiento digital.
               </p>
-              <div class="support-grid">
-                <div class="support-chip">
-                  <strong>Base de datos</strong>
-                  <span>Toda solicitud se almacena como lead real.</span>
-                </div>
-                <div class="support-chip">
-                  <strong>Correo</strong>
-                  <span>Se registra el intento de notificación y puede enviarse por SMTP.</span>
-                </div>
-                <div class="support-chip">
-                  <strong>Agenda</strong>
-                  <span>Después del envío puedes pasar directo a Calendly.</span>
-                </div>
-              </div>
             </div>
-
-            <form id="newsletter-form" class="newsletter-form">
-              <div class="newsletter-grid">
-                <div class="form-group">
-                  <label class="form-label" for="newsletter-name">Nombre</label>
-                  <input class="form-input" id="newsletter-name" name="full_name" type="text" placeholder="Tu nombre completo" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="newsletter-email">Email</label>
-                  <input class="form-input" id="newsletter-email" name="email" type="email" placeholder="tu@empresa.com" required>
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="newsletter-company">Empresa</label>
-                  <input class="form-input" id="newsletter-company" name="company" type="text" placeholder="Nombre de tu empresa">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="newsletter-website">Red social (opcional)</label>
-                  <input class="form-input" id="newsletter-website" name="website" type="text" placeholder="@tu_marca o https://tiktok.com/@tu_marca">
-                </div>
-                <div class="form-group">
-                  <label class="form-label" for="newsletter-phone">Telefono</label>
-                  <div class="phone-input-shell">
-                    <span class="phone-input-prefix">+51</span>
-                    <input class="form-input phone-input-control" id="newsletter-phone" name="phone" type="text" inputmode="numeric" maxlength="9" placeholder="999999999" autocomplete="tel-national" required>
-                  </div>
-                </div>
+            <form id="footer-subscribe-form" class="footer-subscribe-form">
+              <div class="footer-subscribe-grid">
+                <input
+                  class="form-input"
+                  id="footer-subscribe-name"
+                  name="full_name"
+                  type="text"
+                  placeholder="Tu nombre"
+                  required
+                />
+                <input
+                  class="form-input"
+                  id="footer-subscribe-email"
+                  name="email"
+                  type="email"
+                  placeholder="tu@empresa.com"
+                  required
+                />
               </div>
-
-              <div class="form-group">
-                <label class="form-label" for="newsletter-service">Servicio</label>
-                <select class="form-input form-select" id="newsletter-service" name="service_type">
-                  <option value="diagnostic">Diagnóstico</option>
-                  <option value="web">Página web</option>
-                  <option value="ecommerce">E-commerce</option>
-                  <option value="crm">CRM / ERP</option>
-                  <option value="branding">Branding</option>
-                  <option value="automation">Automatización</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="form-label" for="newsletter-message">Cuéntanos sobre tu proyecto</label>
-                <textarea class="textarea-input" id="newsletter-message" name="message" placeholder="Qué necesitas, qué problema quieres resolver y qué resultado esperas."></textarea>
-              </div>
-
               <div class="action-row">
-                <button class="btn btn-accent" id="newsletter-submit" type="submit">Enviar solicitud</button>
-                <button class="btn btn-outline" type="button" onclick="openScheduleModal('public')">Ir directo a Calendly</button>
-                <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero enviar mi solicitud y continuar por WhatsApp.')">Continuar por WhatsApp</button>
+                <button class="btn btn-accent" type="submit">
+                  Recibir novedades
+                </button>
+                <button
+                  class="btn btn-outline btn-whatsapp-inline"
+                  type="button"
+                  onclick="
+                    openWA(
+                      'Hola TISNET, quiero recibir novedades y tambien conversar por WhatsApp.',
+                    )
+                  "
+                >
+                  WhatsApp
+                </button>
               </div>
-              <p class="inline-note" id="newsletter-feedback">Cuando envíes, lo registraremos como lead y podrás continuar con agenda.</p>
+              <p class="inline-note" id="footer-subscribe-feedback">
+                Lo registraremos en tu CRM comercial como un contacto
+                interesado.
+              </p>
             </form>
           </div>
-        </section>
-      </div>
-    </section>
-  </div>
-
-  <div id="about-view" class="view">
-    <section class="landing-page-shell about-view-shell">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container landing-page-body">
-        <div class="landing-page-head">
-          <div class="landing-breadcrumb">
-            <button class="landing-breadcrumb-link" type="button" onclick="showView('public-view')">Inicio</button>
-            <span>/</span>
-            <span>Nosotros</span>
+          <div class="footer-grid">
+            <div class="footer-brand">
+              <div class="nav-logo" style="font-size: 1.3rem">TISNET</div>
+              <p id="footer-tagline">
+                Agencia integral de tecnología y creatividad. Transformamos
+                ideas en sistemas digitales escalables.
+              </p>
+            </div>
+            <div class="footer-col">
+              <h5>Servicios</h5>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('services-view')"
+              >
+                Desarrollo Web
+              </button>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('services-view')"
+              >
+                E-commerce
+              </button>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('services-view')"
+              >
+                CRM y ERP
+              </button>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('services-view')"
+              >
+                Automatización
+              </button>
+            </div>
+            <div class="footer-col">
+              <h5>Empresa</h5>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('about-view')"
+              >
+                Nosotros
+              </button>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('portfolio-view')"
+              >
+                Portafolio
+              </button>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="showView('contact-view')"
+              >
+                Contacto comercial
+              </button>
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="openPricingCalculator()"
+              >
+                Calculadora de presupuesto web
+              </button>
+            </div>
+            <div class="footer-col">
+              <h5>Contacto</h5>
+              <button
+                class="footer-link footer-link-button"
+                id="footer-meeting-link"
+                type="button"
+                onclick="showView('contact-view')"
+              >
+                Solicitar reunion
+              </button>
+              <a
+                href="mailto:hola@tisnet.pe"
+                class="footer-link"
+                id="footer-email-link"
+                >hola@tisnet.pe</a
+              >
+              <button
+                class="footer-link footer-link-button"
+                type="button"
+                onclick="openWA()"
+              >
+                WhatsApp
+              </button>
+            </div>
           </div>
-          <span class="section-label">Nosotros</span>
-          <h2 class="section-title">Equipo TISNET</h2>
-          <p class="section-desc">Conoce a los expertos que hacen posible cada experiencia digital: estrategia, diseno, automatizacion y desarrollo conectados para lanzar proyectos con presencia, conversion y orden operativo.</p>
-          <div class="action-row">
-            <button class="btn btn-accent" type="button" onclick="openScheduleModal('public')">Conocer al equipo</button>
-            <button class="btn btn-outline btn-whatsapp-inline" type="button" onclick="openWA('Hola TISNET, quiero conocer al equipo que llevara mi proyecto.')">Hablar por WhatsApp</button>
+          <div class="footer-bottom">
+            <p>© 2026 TISNET. Todos los derechos reservados.</p>
+            <p>Diseñado y desarrollado por TISNET</p>
           </div>
         </div>
+      </footer>
+    </div>
 
-        <section class="section team-experts-section about-team-section" id="equipo">
-          <div class="section-head team-experts-head">
-            <span class="section-label">Expertos TISNET</span>
-            <h2 class="section-title">Conoce a los expertos que hacen posible cada experiencia digital</h2>
+    <div id="services-view" class="view">
+      <section class="landing-page-shell">
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container landing-page-body">
+          <div class="landing-page-head">
+            <div class="landing-breadcrumb">
+              <button
+                class="landing-breadcrumb-link"
+                type="button"
+                onclick="showView('public-view')"
+              >
+                Inicio
+              </button>
+              <span>/</span>
+              <span>Servicios</span>
+            </div>
+            <span class="section-label">Servicios</span>
+            <h2 class="section-title">
+              Una landing separada para vender mejor<br />cada capacidad de
+              TISNET
+            </h2>
             <p class="section-desc">
-              No trabajas con una sola persona: tu proyecto pasa por una mirada comercial, una experiencia cuidada y una ejecucion tecnica conectada a CRM, agenda, WhatsApp y conversion.
+              Esta página concentra la oferta, la propuesta de valor y la ruta
+              recomendada para que el cliente entienda rápido qué resuelve
+              TISNET y cuál es el siguiente paso correcto.
             </p>
+            <div class="action-row">
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="openPricingCalculator()"
+              >
+                Construir presupuesto
+              </button>
+              <button
+                class="btn btn-outline btn-whatsapp-inline"
+                type="button"
+                onclick="
+                  openWA(
+                    'Hola TISNET, quiero revisar sus servicios y definir la solucion correcta para mi negocio.',
+                  )
+                "
+              >
+                WhatsApp
+              </button>
+            </div>
           </div>
 
-          <div class="team-experts-grid" id="team-experts-grid"></div>
+          <div class="services-grid" id="servicios">
+            <article class="service-card">
+              <div class="service-icon">🌐</div>
+              <h3 class="service-title">Desarrollo Tecnológico</h3>
+              <p class="service-desc">
+                Páginas web, e-commerce, sistemas a medida e integraciones con
+                plataformas como CRM y ERP.
+              </p>
+              <div class="service-tags">
+                <span class="service-tag">Web</span>
+                <span class="service-tag">E-commerce</span>
+                <span class="service-tag">CRM / ERP</span>
+              </div>
+            </article>
 
-          <div class="team-experts-strip">
+            <article class="service-card">
+              <div class="service-icon">⚡</div>
+              <h3 class="service-title">Automatización Comercial</h3>
+              <p class="service-desc">
+                Flujos para captación, seguimiento, onboarding y reuniones
+                comerciales con menos trabajo manual.
+              </p>
+              <div class="service-tags">
+                <span class="service-tag">Lead nurturing</span>
+                <span class="service-tag">Workflows</span>
+                <span class="service-tag">Agenda</span>
+              </div>
+            </article>
+
+            <article class="service-card">
+              <div class="service-icon">🎨</div>
+              <h3 class="service-title">Branding y Diseño</h3>
+              <p class="service-desc">
+                Identidad visual, sistema gráfico y piezas comerciales que
+                sostienen la presencia digital de tu negocio.
+              </p>
+              <div class="service-tags">
+                <span class="service-tag">Branding</span>
+                <span class="service-tag">Identidad</span>
+                <span class="service-tag">Diseño</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="service-callout landing-page-cta">
             <div>
-              <strong>Una mesa de trabajo completa para tu marca.</strong>
-              <p>Unimos estrategia, UX/UI, contenido, automatizacion y backend para que cada pantalla tenga sentido comercial y cada contacto quede registrado.</p>
+              <span class="section-label">Ruta recomendada</span>
+              <h3>
+                No sabes si necesitas landing, ecommerce, CRM o una plataforma
+                completa?
+              </h3>
+              <p>
+                Te ayudamos a definir la arquitectura correcta para que el
+                presupuesto, el backend y la experiencia comercial nazcan bien
+                desde el inicio.
+              </p>
             </div>
             <div class="action-row">
-              <button class="btn btn-accent" type="button" onclick="showView('contact-view')">Solicitar propuesta</button>
-              <button class="btn btn-outline" type="button" onclick="showView('portfolio-view')">Ver proyectos</button>
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="showView('contact-view')"
+              >
+                Hablar con TISNET
+              </button>
+              <button
+                class="btn btn-outline"
+                type="button"
+                onclick="showView('portfolio-view')"
+              >
+                Ver proyectos
+              </button>
             </div>
-          </div>
-        </section>
-      </div>
-    </section>
-  </div>
-
-  <div id="pricing-view" class="view">
-    <section class="calculator-page-shell budget-page-shell">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container calculator-page">
-        <div class="section-head calculator-head budget-head">
-          <div class="budget-breadcrumb">
-            <button class="budget-breadcrumb-link" type="button" onclick="showView('public-view')">Inicio</button>
-            <span>/</span>
-            <span>Presupuesto Web</span>
-          </div>
-          <span class="section-label">Presupuesto</span>
-          <h2 class="section-title">Calculadora de Presupuesto Web</h2>
-          <p class="section-desc">
-            Configura el tipo de proyecto, revisa modulos incluidos, suma extras y descarga una cotizacion clara para compartir o continuar por WhatsApp.
-          </p>
-          <div class="action-row">
-            <button class="btn btn-outline" type="button" onclick="showView('public-view')">Volver al sitio</button>
-            <button class="btn btn-accent" type="button" onclick="openScheduleModal('public')">Agendar llamada</button>
           </div>
         </div>
+      </section>
+    </div>
 
-        <form class="budget-builder" id="pricing-calculator-form" onsubmit="return false;">
-          <section class="budget-step">
-            <div class="budget-step-head">
-              <span class="budget-step-index">01</span>
-              <div>
-                <h3>Informacion del cliente</h3>
-                <p>Cuentanos sobre tu proyecto para personalizar la cotizacion descargable.</p>
-              </div>
+    <div id="portfolio-view" class="view">
+      <section class="landing-page-shell">
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container landing-page-body">
+          <div class="landing-page-head">
+            <div class="landing-breadcrumb">
+              <button
+                class="landing-breadcrumb-link"
+                type="button"
+                onclick="showView('public-view')"
+              >
+                Inicio
+              </button>
+              <span>/</span>
+              <span>Portafolio</span>
             </div>
-            <div class="budget-panel budget-client-grid">
-              <div class="form-group">
-                <label class="form-label" for="calc-client-name">Nombre completo</label>
-                <input class="form-input" id="calc-client-name" name="full_name" type="text" placeholder="Tu nombre completo">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="calc-client-email">Email de contacto</label>
-                <input class="form-input" id="calc-client-email" name="email" type="email" placeholder="tu@email.com">
-              </div>
-              <div class="form-group">
-                <label class="form-label" for="calc-client-company">Empresa</label>
-                <input class="form-input" id="calc-client-company" name="company" type="text" placeholder="Nombre de tu empresa">
-              </div>
-              <div class="form-group budget-client-span">
-                <label class="form-label" for="calc-client-description">Descripcion del proyecto</label>
-                <textarea class="form-input budget-textarea" id="calc-client-description" name="project_description" rows="4" placeholder="Cuentanos que deseas construir, que objetivo tiene y si ya cuentas con contenido, referencias o integraciones."></textarea>
-              </div>
+            <span class="section-label">Portafolio</span>
+            <h2 class="section-title">
+              Casos y proyectos en una landing propia,<br />sin distraer al
+              usuario del objetivo
+            </h2>
+            <p class="section-desc">
+              Explora los casos como un tablero interactivo: pasa el mouse por
+              cada tarjeta para descubrir el proyecto y presiona para abrir su
+              detalle visual.
+            </p>
+          </div>
+
+          <div class="portfolio-memory-shell" id="portafolio">
+            <div class="portfolio-memory-intro">
+              <span class="section-label">Tablero interactivo</span>
+              <p>
+                12 espacios visibles, estilo juego de memoria, con micro mockups
+                que revelan categoria, impacto y acceso rapido al caso.
+              </p>
             </div>
-          </section>
+            <div class="portfolio-memory-grid" id="portfolio-memory-grid"></div>
+          </div>
 
-          <section class="budget-step">
-            <div class="budget-step-head">
-              <span class="budget-step-index">02</span>
-              <div>
-                <h3>Tipo de pagina web</h3>
-                <p>Selecciona el formato base que mejor se adapta a tu negocio.</p>
-              </div>
-            </div>
-            <div class="budget-panel">
-              <div class="form-group budget-select-group">
-                <label class="form-label" for="calc-project-type">Tipo de proyecto</label>
-                <select class="form-input form-select budget-select" id="calc-project-type" name="project_type">
-                  <option value="landing">Landing page</option>
-                  <option value="corporate">Pagina corporativa</option>
-                  <option value="ecommerce" selected>E-commerce</option>
-                  <option value="portfolio">Portafolio personal</option>
-                  <option value="webapp">Aplicacion web</option>
-                  <option value="saas">Plataforma SaaS</option>
-                </select>
-              </div>
-
-              <article class="budget-project-card">
-                <div class="budget-project-top">
-                  <div>
-                    <span class="budget-project-chip" id="calc-project-pill">E-commerce</span>
-                    <h4 id="calc-project-title">E-commerce</h4>
-                    <p id="calc-project-summary">Tienda online pensada para vender con estructura comercial clara y experiencia cuidada.</p>
-                  </div>
-                  <div class="budget-price-box">
-                    <span>Precio base</span>
-                    <strong id="calc-base-price">S/ 0</strong>
-                  </div>
-                </div>
-
-                <div class="budget-timeline-box">
-                  <span>Tiempo estimado base</span>
-                  <strong id="calc-base-time">0 dias habiles</strong>
-                </div>
-
-                <div class="budget-module-grid" id="calc-module-grid"></div>
-              </article>
-            </div>
-          </section>
-
-          <section class="budget-step">
-            <div class="budget-step-head">
-              <span class="budget-step-index">03</span>
-              <div>
-                <h3>Caracteristicas adicionales</h3>
-                <p>Selecciona multiples mejoras para potenciar rendimiento, gestion y conversion.</p>
-              </div>
-            </div>
-            <div class="budget-feature-grid" id="calc-feature-grid"></div>
-          </section>
-
-          <section class="budget-step">
-            <div class="budget-step-head">
-              <span class="budget-step-index">04</span>
-              <div>
-                <h3>Tiempo de entrega</h3>
-                <p>Elige la velocidad de desarrollo que mejor se adapta a tu calendario.</p>
-              </div>
-            </div>
-            <div class="budget-delivery-grid" id="calc-delivery-grid"></div>
-          </section>
-        </form>
-
-        <section class="budget-step budget-summary-step">
-          <div class="budget-step-head">
-            <span class="budget-step-index">05</span>
-            <div>
-              <h3>Resumen del presupuesto</h3>
-              <p>Todo tu alcance resumido en pantalla y listo para descargar en PDF.</p>
+          <div class="section-actions">
+            <button
+              class="btn btn-outline btn-whatsapp-inline"
+              type="button"
+              onclick="
+                openWA(
+                  'Hola TISNET, quiero un proyecto similar a los que muestran en su portafolio.',
+                )
+              "
+            >
+              Quiero un proyecto asi
+            </button>
+            <div class="portfolio-controls">
+              <button
+                class="portfolio-control"
+                type="button"
+                onclick="scrollPortfolio(-1)"
+                aria-label="Proyecto anterior"
+              >
+                ‹
+              </button>
+              <button
+                class="portfolio-control"
+                type="button"
+                onclick="scrollPortfolio(1)"
+                aria-label="Proyecto siguiente"
+              >
+                ›
+              </button>
             </div>
           </div>
 
-          <div class="budget-summary-card">
-            <div class="budget-summary-meta">
-              <div class="budget-meta-item">
-                <span>Proyecto</span>
-                <strong id="calc-summary-project">E-commerce</strong>
+          <div class="portfolio-carousel-shell" id="portfolio-legacy-carousel">
+            <div class="portfolio-track" id="portfolio-track"></div>
+          </div>
+          <div class="portfolio-progress" id="portfolio-progress"></div>
+
+          <div class="portfolio-cta-strip landing-page-cta">
+            <div>
+              <strong>Quieres algo igual de potente para tu marca?</strong>
+              <p>
+                Te guiamos desde la identidad visual hasta la automatizacion
+                comercial y el backend interno.
+              </p>
+            </div>
+            <div class="action-row">
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="openScheduleModal('public')"
+              >
+                Agendar llamada
+              </button>
+              <button
+                class="btn btn-outline btn-whatsapp-inline"
+                type="button"
+                onclick="
+                  openWA(
+                    'Hola TISNET, vi su portafolio y quiero cotizar un proyecto parecido.',
+                  )
+                "
+              >
+                Cotizar por WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div id="contact-view" class="view">
+      <section class="landing-page-shell contact-view-shell">
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container landing-page-body">
+          <div class="landing-page-head">
+            <div class="landing-breadcrumb">
+              <button
+                class="landing-breadcrumb-link"
+                type="button"
+                onclick="showView('public-view')"
+              >
+                Inicio
+              </button>
+              <span>/</span>
+              <span>Contacto</span>
+            </div>
+            <span class="section-label">Contacto</span>
+            <h2 class="section-title">
+              Una landing pensada para convertir<br />interés en conversación
+              real
+            </h2>
+            <p class="section-desc">
+              Aquí se concentra el formulario comercial, el registro del lead,
+              el salto a Calendly y la continuación por WhatsApp en un flujo más
+              limpio y orientado a venta.
+            </p>
+          </div>
+
+          <section
+            class="section section-alt newsletter-section"
+            id="newsletter-section"
+          >
+            <div class="newsletter-card">
+              <div class="newsletter-copy">
+                <span class="section-label">Solicitar Servicio</span>
+                <h2 class="section-title">
+                  Cuéntanos tu proyecto<br />y activamos el siguiente paso
+                </h2>
+                <p class="section-desc">
+                  Completa el formulario y nos pondremos en contacto contigo
+                  para entender tu necesidad, orientarte mejor y ayudarte a
+                  elegir la solución ideal para tu negocio.
+                </p>
+                <div class="support-grid">
+                  <div class="support-chip">
+                    <strong>Solicitud registrada</strong>
+                    <span
+                      >Guardaremos tu información para revisar tu proyecto con
+                      mayor detalle.</span
+                    >
+                  </div>
+                  <div class="support-chip">
+                    <strong>Atención directa</strong>
+                    <span
+                      >Un asesor se comunicará contigo para resolver dudas y
+                      orientarte según tus objetivos.</span
+                    >
+                  </div>
+                  <div class="support-chip">
+                    <strong>Reunión estratégica</strong>
+                    <span
+                      >Podrás agendar una llamada para definir los próximos
+                      pasos de tu proyecto.</span
+                    >
+                  </div>
+                </div>
               </div>
-              <div class="budget-meta-item">
-                <span>Entrega</span>
-                <strong id="calc-summary-delivery">Normal</strong>
-              </div>
-              <div class="budget-meta-item">
-                <span>Extras</span>
-                <strong id="calc-summary-extras">0 seleccionados</strong>
-              </div>
-              <div class="budget-meta-item">
-                <span>Fecha estimada</span>
-                <strong id="calc-summary-date">-</strong>
-              </div>
+
+              <form id="newsletter-form" class="newsletter-form">
+                <div class="newsletter-grid">
+                  <div class="form-group">
+                    <label class="form-label" for="newsletter-name"
+                      >Nombre</label
+                    >
+                    <input
+                      class="form-input"
+                      id="newsletter-name"
+                      name="full_name"
+                      type="text"
+                      placeholder="Tu nombre completo"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="newsletter-email"
+                      >Email</label
+                    >
+                    <input
+                      class="form-input"
+                      id="newsletter-email"
+                      name="email"
+                      type="email"
+                      placeholder="tu@empresa.com"
+                      required
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="newsletter-company"
+                      >Empresa</label
+                    >
+                    <input
+                      class="form-input"
+                      id="newsletter-company"
+                      name="company"
+                      type="text"
+                      placeholder="Nombre de tu empresa"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="newsletter-website"
+                      >Red social (opcional)</label
+                    >
+                    <input
+                      class="form-input"
+                      id="newsletter-website"
+                      name="website"
+                      type="text"
+                      placeholder="@tu_marca o https://tiktok.com/@tu_marca"
+                    />
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="newsletter-phone"
+                      >Telefono</label
+                    >
+                    <div class="phone-input-shell">
+                      <span class="phone-input-prefix">+51</span>
+                      <input
+                        class="form-input phone-input-control"
+                        id="newsletter-phone"
+                        name="phone"
+                        type="text"
+                        inputmode="numeric"
+                        maxlength="9"
+                        placeholder="999555333"
+                        autocomplete="tel-national"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="newsletter-service"
+                    >Servicio</label
+                  >
+                  <select
+                    class="form-input form-select"
+                    id="newsletter-service"
+                    name="service_type"
+                  >
+                    <option value="diagnostic">Diagnóstico</option>
+                    <option value="web">Página web</option>
+                    <option value="ecommerce">E-commerce</option>
+                    <option value="crm">CRM / ERP</option>
+                    <option value="branding">Branding</option>
+                    <option value="automation">Automatización</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="newsletter-message"
+                    >Cuéntanos sobre tu proyecto</label
+                  >
+                  <textarea
+                    class="textarea-input"
+                    id="newsletter-message"
+                    name="message"
+                    placeholder="Qué necesitas, qué problema quieres resolver y qué resultado esperas."
+                  ></textarea>
+                </div>
+
+                <div class="action-row">
+                  <button
+                    class="btn btn-accent"
+                    id="newsletter-submit"
+                    type="submit"
+                  >
+                    Enviar solicitud
+                  </button>
+                  <button
+                    class="btn btn-outline"
+                    type="button"
+                    onclick="openScheduleModal('public')"
+                  >
+                    Agendar reunión
+                  </button>
+                  <button
+                    class="btn btn-outline btn-whatsapp-inline"
+                    type="button"
+                    onclick="
+                      openWA(
+                        'Hola TISNET, quiero enviar mi solicitud y continuar por WhatsApp.',
+                      )
+                    "
+                  >
+                    Continuar por WhatsApp
+                  </button>
+                </div>
+                <p class="inline-note" id="newsletter-feedback">
+                  Cuando envíes, lo registraremos como lead y podrás continuar
+                  con agenda.
+                </p>
+              </form>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div id="about-view" class="view">
+      <section class="landing-page-shell about-view-shell">
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container landing-page-body">
+          <div class="landing-page-head">
+            <div class="landing-breadcrumb">
+              <button
+                class="landing-breadcrumb-link"
+                type="button"
+                onclick="showView('public-view')"
+              >
+                Inicio
+              </button>
+              <span>/</span>
+              <span>Nosotros</span>
+            </div>
+            <span class="section-label">Nosotros</span>
+            <h2 class="section-title">Equipo TISNET</h2>
+            <p class="section-desc">
+              Creamos soluciones digitales pensadas para negocios que quieren
+              crecer, captar más clientes y mejorar su presencia online.
+            </p>
+            <div class="action-row">
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="openScheduleModal('public')"
+              >
+                Conoce al equipo
+              </button>
+              <button
+                class="btn btn-outline btn-whatsapp-inline"
+                type="button"
+                onclick="
+                  openWA(
+                    'Hola TISNET, quiero conocer al equipo que llevara mi proyecto.',
+                  )
+                "
+              >
+                Hablar por WhatsApp
+              </button>
+            </div>
+          </div>
+
+          <section
+            class="section team-experts-section about-team-section"
+            id="equipo"
+          >
+            <div class="section-head team-experts-head">
+              <span class="section-label">Expertos TISNET</span>
+              <h2 class="section-title">
+                Un equipo listo para llevar tu negocio al siguiente nivel
+              </h2>
+              <p class="section-desc">
+                Combinamos estrategia, diseño, automatización y desarrollo para
+                construir experiencias digitales claras, modernas y orientadas a
+                resultados.
+              </p>
             </div>
 
-            <div class="budget-summary-table" id="calc-breakdown"></div>
+            <div class="team-experts-grid" id="team-experts-grid"></div>
 
-            <div class="budget-summary-total">
+            <div class="team-experts-strip">
               <div>
-                <span>Total de inversion</span>
-                <small id="calc-total-caption">Incluye alcance, extras y modalidad de entrega seleccionada.</small>
+                <strong>Un equipo completo para hacer crecer tu marca.</strong>
+                <p>
+                  Integramos estrategia, diseño, desarrollo y automatización
+                  para que tu página no sea solo una vitrina, sino una
+                  herramienta real de ventas y crecimiento.
+                </p>
               </div>
-              <strong id="calc-total-output">S/ 0</strong>
+              <div class="action-row">
+                <button
+                  class="btn btn-accent"
+                  type="button"
+                  onclick="showView('contact-view')"
+                >
+                  Solicitar propuesta
+                </button>
+                <button
+                  class="btn btn-outline"
+                  type="button"
+                  onclick="showView('portfolio-view')"
+                >
+                  Ver proyectos
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div id="pricing-view" class="view">
+      <section class="calculator-page-shell budget-page-shell">
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container calculator-page">
+          <div class="section-head calculator-head budget-head">
+            <div class="budget-breadcrumb">
+              <button
+                class="budget-breadcrumb-link"
+                type="button"
+                onclick="showView('public-view')"
+              >
+                Inicio
+              </button>
+              <span>/</span>
+              <span>Presupuesto Web</span>
+            </div>
+            <span class="section-label">Presupuesto</span>
+            <h2 class="section-title">Calculadora de Presupuesto Web</h2>
+            <p class="section-desc">
+              Configura el tipo de proyecto, revisa modulos incluidos, suma
+              extras y descarga una cotizacion clara para compartir o continuar
+              por WhatsApp.
+            </p>
+            <div class="action-row">
+              <button
+                class="btn btn-outline"
+                type="button"
+                onclick="showView('public-view')"
+              >
+                Volver al sitio
+              </button>
+              <button
+                class="btn btn-accent"
+                type="button"
+                onclick="openScheduleModal('public')"
+              >
+                Agendar llamada
+              </button>
+            </div>
+          </div>
+
+          <form
+            class="budget-builder"
+            id="pricing-calculator-form"
+            onsubmit="return false;"
+          >
+            <section class="budget-step">
+              <div class="budget-step-head">
+                <span class="budget-step-index">01</span>
+                <div>
+                  <h3>Informacion del cliente</h3>
+                  <p>
+                    Cuentanos sobre tu proyecto para personalizar la cotizacion
+                    descargable.
+                  </p>
+                </div>
+              </div>
+              <div class="budget-panel budget-client-grid">
+                <div class="form-group">
+                  <label class="form-label" for="calc-client-name"
+                    >Nombre completo</label
+                  >
+                  <input
+                    class="form-input"
+                    id="calc-client-name"
+                    name="full_name"
+                    type="text"
+                    placeholder="Tu nombre completo"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="calc-client-email"
+                    >Email de contacto</label
+                  >
+                  <input
+                    class="form-input"
+                    id="calc-client-email"
+                    name="email"
+                    type="email"
+                    placeholder="tu@email.com"
+                  />
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="calc-client-company"
+                    >Empresa</label
+                  >
+                  <input
+                    class="form-input"
+                    id="calc-client-company"
+                    name="company"
+                    type="text"
+                    placeholder="Nombre de tu empresa"
+                  />
+                </div>
+                <div class="form-group budget-client-span">
+                  <label class="form-label" for="calc-client-description"
+                    >Descripcion del proyecto</label
+                  >
+                  <textarea
+                    class="form-input budget-textarea"
+                    id="calc-client-description"
+                    name="project_description"
+                    rows="4"
+                    placeholder="Cuentanos que deseas construir, que objetivo tiene y si ya cuentas con contenido, referencias o integraciones."
+                  ></textarea>
+                </div>
+              </div>
+            </section>
+
+            <section class="budget-step">
+              <div class="budget-step-head">
+                <span class="budget-step-index">02</span>
+                <div>
+                  <h3>Tipo de pagina web</h3>
+                  <p>
+                    Selecciona el formato base que mejor se adapta a tu negocio.
+                  </p>
+                </div>
+              </div>
+              <div class="budget-panel">
+                <div class="form-group budget-select-group">
+                  <label class="form-label" for="calc-project-type"
+                    >Tipo de proyecto</label
+                  >
+                  <select
+                    class="form-input form-select budget-select"
+                    id="calc-project-type"
+                    name="project_type"
+                  >
+                    <option value="landing">Landing page</option>
+                    <option value="corporate">Pagina corporativa</option>
+                    <option value="ecommerce" selected>E-commerce</option>
+                    <option value="portfolio">Portafolio personal</option>
+                    <option value="webapp">Aplicacion web</option>
+                    <option value="saas">Plataforma SaaS</option>
+                  </select>
+                </div>
+
+                <article class="budget-project-card">
+                  <div class="budget-project-top">
+                    <div>
+                      <span class="budget-project-chip" id="calc-project-pill"
+                        >E-commerce</span
+                      >
+                      <h4 id="calc-project-title">E-commerce</h4>
+                      <p id="calc-project-summary">
+                        Tienda online pensada para vender con estructura
+                        comercial clara y experiencia cuidada.
+                      </p>
+                    </div>
+                    <div class="budget-price-box">
+                      <span>Precio base</span>
+                      <strong id="calc-base-price">S/ 0</strong>
+                    </div>
+                  </div>
+
+                  <div class="budget-timeline-box">
+                    <span>Tiempo estimado base</span>
+                    <strong id="calc-base-time">0 dias habiles</strong>
+                  </div>
+
+                  <div class="budget-module-grid" id="calc-module-grid"></div>
+                </article>
+              </div>
+            </section>
+
+            <section class="budget-step">
+              <div class="budget-step-head">
+                <span class="budget-step-index">03</span>
+                <div>
+                  <h3>Caracteristicas adicionales</h3>
+                  <p>
+                    Selecciona multiples mejoras para potenciar rendimiento,
+                    gestion y conversion.
+                  </p>
+                </div>
+              </div>
+              <div class="budget-feature-grid" id="calc-feature-grid"></div>
+            </section>
+
+            <section class="budget-step">
+              <div class="budget-step-head">
+                <span class="budget-step-index">04</span>
+                <div>
+                  <h3>Tiempo de entrega</h3>
+                  <p>
+                    Elige la velocidad de desarrollo que mejor se adapta a tu
+                    calendario.
+                  </p>
+                </div>
+              </div>
+              <div class="budget-delivery-grid" id="calc-delivery-grid"></div>
+            </section>
+          </form>
+
+          <section class="budget-step budget-summary-step">
+            <div class="budget-step-head">
+              <span class="budget-step-index">05</span>
+              <div>
+                <h3>Resumen del presupuesto</h3>
+                <p>
+                  Todo tu alcance resumido en pantalla y listo para descargar en
+                  PDF.
+                </p>
+              </div>
             </div>
 
-            <div class="action-column budget-summary-actions">
-              <button class="btn btn-accent" type="button" onclick="downloadBudgetQuote()">Solicitar presupuesto</button>
-              <button class="btn btn-outline" type="button" onclick="sendBudgetQuoteToWhatsApp()">Continuar por WhatsApp</button>
-            </div>
+            <div class="budget-summary-card">
+              <div class="budget-summary-meta">
+                <div class="budget-meta-item">
+                  <span>Proyecto</span>
+                  <strong id="calc-summary-project">E-commerce</strong>
+                </div>
+                <div class="budget-meta-item">
+                  <span>Entrega</span>
+                  <strong id="calc-summary-delivery">Normal</strong>
+                </div>
+                <div class="budget-meta-item">
+                  <span>Extras</span>
+                  <strong id="calc-summary-extras">0 seleccionados</strong>
+                </div>
+                <div class="budget-meta-item">
+                  <span>Fecha estimada</span>
+                  <strong id="calc-summary-date">-</strong>
+                </div>
+              </div>
 
-            <p class="budget-summary-note" id="calc-summary-note">
-              Al hacer clic en solicitar presupuesto se descargara una cotizacion PDF con el detalle de tu configuracion.
+              <div class="budget-summary-table" id="calc-breakdown"></div>
+
+              <div class="budget-summary-total">
+                <div>
+                  <span>Total de inversion</span>
+                  <small id="calc-total-caption"
+                    >Incluye alcance, extras y modalidad de entrega
+                    seleccionada.</small
+                  >
+                </div>
+                <strong id="calc-total-output">S/ 0</strong>
+              </div>
+
+              <div class="action-column budget-summary-actions">
+                <button
+                  class="btn btn-accent"
+                  type="button"
+                  onclick="downloadBudgetQuote()"
+                >
+                  Solicitar presupuesto
+                </button>
+                <button
+                  class="btn btn-outline"
+                  type="button"
+                  onclick="sendBudgetQuoteToWhatsApp()"
+                >
+                  Continuar por WhatsApp
+                </button>
+              </div>
+
+              <p class="budget-summary-note" id="calc-summary-note">
+                Al hacer clic en solicitar presupuesto se descargara una
+                cotizacion PDF con el detalle de tu configuracion.
+              </p>
+
+              <div class="budget-terms">
+                <div class="budget-terms-title">Terminos y condiciones</div>
+                <div class="budget-terms-grid">
+                  <div class="budget-term-item">
+                    <strong>Validez:</strong> 10 dias calendario desde la
+                    emision.
+                  </div>
+                  <div class="budget-term-item">
+                    <strong>Pago:</strong> 50% de anticipo y 50% contra entrega.
+                  </div>
+                  <div class="budget-term-item">
+                    <strong>Contenido:</strong> textos, imagenes y logos son
+                    provistos por el cliente.
+                  </div>
+                  <div class="budget-term-item">
+                    <strong>Hosting y dominio:</strong> se cotizan aparte si no
+                    fueron seleccionados.
+                  </div>
+                  <div class="budget-term-item">
+                    <strong>Revisiones:</strong> incluye 3 rondas de ajustes
+                    sobre el alcance aprobado.
+                  </div>
+                  <div class="budget-term-item">
+                    <strong>Garantia:</strong> 30 dias de soporte tecnico
+                    posterior a la entrega.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <div
+      class="modal-bg hidden"
+      id="quote-detail-modal-bg"
+      onclick="closeQuoteDetailModal(event)"
+    >
+      <div class="modal quote-detail-modal">
+        <button
+          class="quote-detail-close"
+          type="button"
+          onclick="closeQuoteDetailModal()"
+        >
+          &times;
+        </button>
+        <div class="quote-detail-kicker" id="quote-detail-kicker">Detalle</div>
+        <h3 class="quote-detail-title" id="quote-detail-title">
+          Detalle del servicio
+        </h3>
+        <p class="quote-detail-description" id="quote-detail-description">
+          Descripcion del alcance seleccionado.
+        </p>
+        <div class="quote-detail-badge" id="quote-detail-badge">Incluido</div>
+        <div class="quote-detail-list" id="quote-detail-list"></div>
+      </div>
+    </div>
+
+    <div id="client-home" class="view">
+      <div
+        id="client-home-hero"
+        style="
+          min-height: 100vh;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          position: relative;
+          overflow: hidden;
+          padding-top: 68px;
+        "
+      >
+        <div class="hero-bg"></div>
+        <div class="grid-overlay"></div>
+        <div class="container hero-content">
+          <div class="hero-eyebrow">Panel de Cliente</div>
+          <h1 class="hero-title">
+            Bienvenido, <span id="client-greeting-name">Cliente</span>
+          </h1>
+          <p class="hero-desc">
+            Desde aquí puedes revisar tu proyecto, agendar reuniones, completar
+            el diagnóstico y mantener tu información al día.
+          </p>
+          <div class="hero-actions">
+            <button
+              class="btn btn-accent"
+              type="button"
+              onclick="showView('client-panel-view')"
+            >
+              Ir a mi panel
+            </button>
+            <button
+              class="btn btn-outline"
+              type="button"
+              onclick="showView('wizard-view')"
+            >
+              Completar diagnóstico
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="wizard-view" class="view">
+      <div class="wizard-page-shell">
+        <div class="container">
+          <div class="wizard-wrap">
+            <div class="section-label" style="margin-bottom: 8px">
+              Formulario Inteligente
+            </div>
+            <h2 class="section-title" style="margin-bottom: 8px">
+              Diagnóstico de tu Proyecto
+            </h2>
+            <p class="panel-sub">
+              Este formulario alimenta el backend del cliente y también puede
+              reflejarse en el historial del proyecto.
             </p>
 
-            <div class="budget-terms">
-              <div class="budget-terms-title">Terminos y condiciones</div>
-              <div class="budget-terms-grid">
-                <div class="budget-term-item"><strong>Validez:</strong> 10 dias calendario desde la emision.</div>
-                <div class="budget-term-item"><strong>Pago:</strong> 50% de anticipo y 50% contra entrega.</div>
-                <div class="budget-term-item"><strong>Contenido:</strong> textos, imagenes y logos son provistos por el cliente.</div>
-                <div class="budget-term-item"><strong>Hosting y dominio:</strong> se cotizan aparte si no fueron seleccionados.</div>
-                <div class="budget-term-item"><strong>Revisiones:</strong> incluye 3 rondas de ajustes sobre el alcance aprobado.</div>
-                <div class="budget-term-item"><strong>Garantia:</strong> 30 dias de soporte tecnico posterior a la entrega.</div>
+            <div class="wizard-progress" id="wizard-progress">
+              <div class="wizard-step done">
+                <div class="ws-circle">1</div>
+                <div class="ws-label">Cuenta</div>
+              </div>
+              <div class="wizard-step active">
+                <div class="ws-circle">2</div>
+                <div class="ws-label">Negocio</div>
+              </div>
+              <div class="wizard-step">
+                <div class="ws-circle">3</div>
+                <div class="ws-label">Necesidades</div>
+              </div>
+              <div class="wizard-step">
+                <div class="ws-circle">4</div>
+                <div class="ws-label">Agenda</div>
               </div>
             </div>
-          </div>
-        </section>
-      </div>
-    </section>
-  </div>
 
-  <div class="modal-bg hidden" id="quote-detail-modal-bg" onclick="closeQuoteDetailModal(event)">
-    <div class="modal quote-detail-modal">
-      <button class="quote-detail-close" type="button" onclick="closeQuoteDetailModal()">&times;</button>
-      <div class="quote-detail-kicker" id="quote-detail-kicker">Detalle</div>
-      <h3 class="quote-detail-title" id="quote-detail-title">Detalle del servicio</h3>
-      <p class="quote-detail-description" id="quote-detail-description">Descripcion del alcance seleccionado.</p>
-      <div class="quote-detail-badge" id="quote-detail-badge">Incluido</div>
-      <div class="quote-detail-list" id="quote-detail-list"></div>
-    </div>
-  </div>
-
-  <div id="client-home" class="view">
-    <div id="client-home-hero" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;position:relative;overflow:hidden;padding-top:68px;">
-      <div class="hero-bg"></div>
-      <div class="grid-overlay"></div>
-      <div class="container hero-content">
-        <div class="hero-eyebrow">Panel de Cliente</div>
-        <h1 class="hero-title">Bienvenido, <span id="client-greeting-name">Cliente</span></h1>
-        <p class="hero-desc">Desde aquí puedes revisar tu proyecto, agendar reuniones, completar el diagnóstico y mantener tu información al día.</p>
-        <div class="hero-actions">
-          <button class="btn btn-accent" type="button" onclick="showView('client-panel-view')">Ir a mi panel</button>
-          <button class="btn btn-outline" type="button" onclick="showView('wizard-view')">Completar diagnóstico</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div id="wizard-view" class="view">
-    <div class="wizard-page-shell">
-      <div class="container">
-        <div class="wizard-wrap">
-          <div class="section-label" style="margin-bottom:8px">Formulario Inteligente</div>
-          <h2 class="section-title" style="margin-bottom:8px">Diagnóstico de tu Proyecto</h2>
-          <p class="panel-sub">Este formulario alimenta el backend del cliente y también puede reflejarse en el historial del proyecto.</p>
-
-          <div class="wizard-progress" id="wizard-progress">
-            <div class="wizard-step done">
-              <div class="ws-circle">1</div>
-              <div class="ws-label">Cuenta</div>
-            </div>
-            <div class="wizard-step active">
-              <div class="ws-circle">2</div>
-              <div class="ws-label">Negocio</div>
-            </div>
-            <div class="wizard-step">
-              <div class="ws-circle">3</div>
-              <div class="ws-label">Necesidades</div>
-            </div>
-            <div class="wizard-step">
-              <div class="ws-circle">4</div>
-              <div class="ws-label">Agenda</div>
-            </div>
-          </div>
-
-          <form class="wizard-card" id="diagnostic-form">
-            <div class="wizard-title">Cuéntanos sobre tu negocio</div>
-            <div class="wizard-sub">Con esta información generamos contexto real para el dashboard del cliente.</div>
-
-            <div class="form-group">
-              <label class="form-label" for="diagnostic-business-summary">¿A qué se dedica tu empresa?</label>
-              <textarea class="textarea-input" id="diagnostic-business-summary" name="business_summary" placeholder="Ejemplo: somos una consultora de RRHH para pequeñas empresas y queremos ordenar nuestra operación comercial." required></textarea>
-            </div>
-
-            <div class="form-group">
-              <label class="form-label">Etapa actual del negocio</label>
-              <div class="radio-group" id="diagnostic-stage-group">
-                <button class="radio-opt selected" type="button" data-stage="inicio" onclick="selectDiagnosticStage(this)">
-                  <div class="radio-dot"></div>
-                  <span class="radio-text">Inicio - Construyendo la base</span>
-                </button>
-                <button class="radio-opt" type="button" data-stage="crecimiento" onclick="selectDiagnosticStage(this)">
-                  <div class="radio-dot"></div>
-                  <span class="radio-text">Crecimiento - Necesito escalar</span>
-                </button>
-                <button class="radio-opt" type="button" data-stage="consolidacion" onclick="selectDiagnosticStage(this)">
-                  <div class="radio-dot"></div>
-                  <span class="radio-text">Consolidación - Optimizar procesos</span>
-                </button>
-                <button class="radio-opt" type="button" data-stage="expansion" onclick="selectDiagnosticStage(this)">
-                  <div class="radio-dot"></div>
-                  <span class="radio-text">Expansión - Abrir nuevos mercados</span>
-                </button>
+            <form class="wizard-card" id="diagnostic-form">
+              <div class="wizard-title">Cuéntanos sobre tu negocio</div>
+              <div class="wizard-sub">
+                Con esta información generamos contexto real para el dashboard
+                del cliente.
               </div>
-              <input type="hidden" id="diagnostic-business-stage" name="business_stage" value="inicio">
-            </div>
 
-            <div class="form-group">
-              <label class="form-label" for="diagnostic-primary-need">¿Qué necesitas resolver?</label>
-              <textarea class="textarea-input" id="diagnostic-primary-need" name="primary_need" placeholder="Ejemplo: generar leads, lanzar un e-commerce, organizar el CRM o integrar agenda con seguimiento."></textarea>
-            </div>
+              <div class="form-group">
+                <label class="form-label" for="diagnostic-business-summary"
+                  >¿A qué se dedica tu empresa?</label
+                >
+                <textarea
+                  class="textarea-input"
+                  id="diagnostic-business-summary"
+                  name="business_summary"
+                  placeholder="Ejemplo: somos una consultora de RRHH para pequeñas empresas y queremos ordenar nuestra operación comercial."
+                  required
+                ></textarea>
+              </div>
 
-            <div class="form-group">
-              <label class="form-label" for="diagnostic-goal">¿Qué resultado esperas?</label>
-              <textarea class="textarea-input" id="diagnostic-goal" name="goal" placeholder="Ejemplo: cerrar más ventas, reducir trabajo manual o presentar mejor la propuesta comercial."></textarea>
-            </div>
+              <div class="form-group">
+                <label class="form-label">Etapa actual del negocio</label>
+                <div class="radio-group" id="diagnostic-stage-group">
+                  <button
+                    class="radio-opt selected"
+                    type="button"
+                    data-stage="inicio"
+                    onclick="selectDiagnosticStage(this)"
+                  >
+                    <div class="radio-dot"></div>
+                    <span class="radio-text"
+                      >Inicio - Construyendo la base</span
+                    >
+                  </button>
+                  <button
+                    class="radio-opt"
+                    type="button"
+                    data-stage="crecimiento"
+                    onclick="selectDiagnosticStage(this)"
+                  >
+                    <div class="radio-dot"></div>
+                    <span class="radio-text"
+                      >Crecimiento - Necesito escalar</span
+                    >
+                  </button>
+                  <button
+                    class="radio-opt"
+                    type="button"
+                    data-stage="consolidacion"
+                    onclick="selectDiagnosticStage(this)"
+                  >
+                    <div class="radio-dot"></div>
+                    <span class="radio-text"
+                      >Consolidación - Optimizar procesos</span
+                    >
+                  </button>
+                  <button
+                    class="radio-opt"
+                    type="button"
+                    data-stage="expansion"
+                    onclick="selectDiagnosticStage(this)"
+                  >
+                    <div class="radio-dot"></div>
+                    <span class="radio-text"
+                      >Expansión - Abrir nuevos mercados</span
+                    >
+                  </button>
+                </div>
+                <input
+                  type="hidden"
+                  id="diagnostic-business-stage"
+                  name="business_stage"
+                  value="inicio"
+                />
+              </div>
 
-            <div class="wizard-actions">
-              <button class="btn btn-ghost" type="button" onclick="showView('client-home')">Volver</button>
-              <div class="action-row">
-                <button class="btn btn-outline" type="button" onclick="openScheduleModal('client-review')">Agendar ahora</button>
-                <button class="btn btn-accent" type="submit">Guardar diagnóstico</button>
+              <div class="form-group">
+                <label class="form-label" for="diagnostic-primary-need"
+                  >¿Qué necesitas resolver?</label
+                >
+                <textarea
+                  class="textarea-input"
+                  id="diagnostic-primary-need"
+                  name="primary_need"
+                  placeholder="Ejemplo: generar leads, lanzar un e-commerce, organizar el CRM o integrar agenda con seguimiento."
+                ></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="diagnostic-goal"
+                  >¿Qué resultado esperas?</label
+                >
+                <textarea
+                  class="textarea-input"
+                  id="diagnostic-goal"
+                  name="goal"
+                  placeholder="Ejemplo: cerrar más ventas, reducir trabajo manual o presentar mejor la propuesta comercial."
+                ></textarea>
+              </div>
+
+              <div class="wizard-actions">
+                <button
+                  class="btn btn-ghost"
+                  type="button"
+                  onclick="showView('client-home')"
+                >
+                  Volver
+                </button>
+                <div class="action-row">
+                  <button
+                    class="btn btn-outline"
+                    type="button"
+                    onclick="openScheduleModal('client-review')"
+                  >
+                    Agendar ahora
+                  </button>
+                  <button class="btn btn-accent" type="submit">
+                    Guardar diagnóstico
+                  </button>
+                </div>
+              </div>
+              <p class="inline-note" id="diagnostic-feedback">
+                Guarda el diagnóstico y se actualizará también dentro del panel
+                del cliente.
+              </p>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="client-panel-view" class="view">
+      <div id="client-panel">
+        <div class="client-layout">
+          <aside class="client-sidebar">
+            <div class="sidebar-section">
+              <button
+                class="sidebar-link active"
+                type="button"
+                onclick="setClientTab('overview', this)"
+              >
+                <span class="sidebar-icon">📊</span> Mi Proyecto
+              </button>
+              <button
+                class="sidebar-link"
+                type="button"
+                onclick="setClientTab('schedule', this)"
+              >
+                <span class="sidebar-icon">📅</span> Agendar Reunión
+              </button>
+              <button
+                class="sidebar-link"
+                type="button"
+                onclick="setClientTab('wizard', this)"
+              >
+                <span class="sidebar-icon">📝</span> Diagnóstico
+              </button>
+              <button
+                class="sidebar-link"
+                type="button"
+                onclick="setClientTab('history', this)"
+              >
+                <span class="sidebar-icon">📁</span> Historial
+              </button>
+            </div>
+            <div class="sidebar-label" style="margin-top: 20px">Cuenta</div>
+            <button
+              class="sidebar-link"
+              type="button"
+              onclick="setClientTab('settings', this)"
+            >
+              <span class="sidebar-icon">⚙️</span> Configuración
+            </button>
+            <button class="sidebar-link" type="button" onclick="logout()">
+              <span class="sidebar-icon">🚪</span> Cerrar sesión
+            </button>
+          </aside>
+
+          <main class="client-main">
+            <div id="ctab-overview"></div>
+            <div id="ctab-schedule" class="hidden"></div>
+            <div id="ctab-history" class="hidden"></div>
+            <div id="ctab-settings" class="hidden"></div>
+            <div id="ctab-wizard" class="hidden"></div>
+          </main>
+        </div>
+      </div>
+    </div>
+
+    <div id="admin-panel-view" class="view">
+      <div id="admin-panel">
+        <div class="admin-layout">
+          <aside class="admin-sidebar">
+            <div style="padding: 12px; margin-bottom: 20px">
+              <div class="nav-logo" style="font-size: 1.1rem">TISNET</div>
+              <div
+                id="admin-panel-role-caption"
+                style="
+                  font-size: 0.7rem;
+                  color: var(--text-muted);
+                  margin-top: 2px;
+                "
+              >
+                Panel Administrador
               </div>
             </div>
-            <p class="inline-note" id="diagnostic-feedback">Guarda el diagnóstico y se actualizará también dentro del panel del cliente.</p>
-          </form>
+
+            <div class="admin-section-label">Principal</div>
+            <button
+              class="sidebar-link active"
+              data-admin-tab="dashboard"
+              type="button"
+              onclick="setAdminTab('dashboard', this)"
+            >
+              <span class="sidebar-icon">📊</span> Dashboard
+            </button>
+            <button
+              class="sidebar-link"
+              data-admin-tab="crm"
+              type="button"
+              onclick="setAdminTab('crm', this)"
+            >
+              <span class="sidebar-icon">👥</span> CRM
+            </button>
+            <button
+              class="sidebar-link"
+              data-admin-tab="projects"
+              data-role-scope="admin"
+              type="button"
+              onclick="setAdminTab('projects', this)"
+            >
+              <span class="sidebar-icon">🗂</span> Proyectos
+            </button>
+            <button
+              class="sidebar-link"
+              data-admin-tab="clients"
+              type="button"
+              onclick="setAdminTab('clients', this)"
+            >
+              <span class="sidebar-icon">🤝</span> Clientes
+            </button>
+
+            <div class="admin-section-label">Operación</div>
+            <button
+              class="sidebar-link"
+              data-admin-tab="calendar"
+              type="button"
+              onclick="setAdminTab('calendar', this)"
+            >
+              <span class="sidebar-icon">📅</span> Calendario
+            </button>
+            <button
+              class="sidebar-link"
+              data-admin-tab="reports"
+              type="button"
+              onclick="setAdminTab('reports', this)"
+            >
+              <span class="sidebar-icon">📈</span> Reportes
+            </button>
+
+            <div class="admin-section-label">Sistema</div>
+            <button
+              class="sidebar-link"
+              data-admin-tab="settings"
+              data-role-scope="admin"
+              type="button"
+              onclick="setAdminTab('settings', this)"
+            >
+              <span class="sidebar-icon">⚙️</span> Configuración
+            </button>
+            <button class="sidebar-link" type="button" onclick="logout()">
+              <span class="sidebar-icon">🚪</span> Salir
+            </button>
+          </aside>
+
+          <main class="admin-main">
+            <div id="atab-dashboard"></div>
+            <div id="atab-crm" class="hidden"></div>
+            <div id="atab-projects" class="hidden"></div>
+            <div id="atab-clients" class="hidden"></div>
+            <div id="atab-calendar" class="hidden"></div>
+            <div id="atab-reports" class="hidden"></div>
+            <div id="atab-settings" class="hidden"></div>
+          </main>
         </div>
       </div>
     </div>
-  </div>
 
-  <div id="client-panel-view" class="view">
-    <div id="client-panel">
-      <div class="client-layout">
-        <aside class="client-sidebar">
-          <div class="sidebar-section">
-            <button class="sidebar-link active" type="button" onclick="setClientTab('overview', this)">
-              <span class="sidebar-icon">📊</span> Mi Proyecto
-            </button>
-            <button class="sidebar-link" type="button" onclick="setClientTab('schedule', this)">
-              <span class="sidebar-icon">📅</span> Agendar Reunión
-            </button>
-            <button class="sidebar-link" type="button" onclick="setClientTab('wizard', this)">
-              <span class="sidebar-icon">📝</span> Diagnóstico
-            </button>
-            <button class="sidebar-link" type="button" onclick="setClientTab('history', this)">
-              <span class="sidebar-icon">📁</span> Historial
+    <div
+      class="modal-bg hidden"
+      id="admin-client-modal-bg"
+      onclick="closeAdminClientDetail(event)"
+    >
+      <div
+        class="modal modal-wide admin-client-modal"
+        onclick="event.stopPropagation()"
+      >
+        <div class="modal-header-row">
+          <div>
+            <div class="modal-logo">Clientes</div>
+            <h3 class="panel-title" id="admin-client-modal-title">
+              Vista detallada del cliente
+            </h3>
+            <p class="panel-sub" id="admin-client-modal-subtitle">
+              Datos generales, respuestas del formulario, cotización y progreso.
+            </p>
+          </div>
+          <button
+            class="close-btn"
+            type="button"
+            onclick="closeAdminClientDetail()"
+          >
+            Cerrar
+          </button>
+        </div>
+        <div id="admin-client-modal-content"></div>
+      </div>
+    </div>
+
+    <button id="wabtn" type="button" onclick="openWA()">
+      <img
+        class="wa-icon-image"
+        src="img/wstapicon.png?v=20260424b"
+        alt="TISNET en WhatsApp"
+      />
+      <span>💬</span>
+      <div class="wa-tooltip">Hablar con TISNET por WhatsApp</div>
+    </button>
+
+    <div class="modal-bg hidden" id="modal-bg" onclick="closeModalBg(event)">
+      <div class="modal auth-modal" onclick="event.stopPropagation()">
+        <div class="auth-card-top">
+          <div>
+            <div class="modal-logo">TISNET</div>
+            <p class="modal-sub" id="modal-sub">
+              Accede a tu panel o crea tu cuenta para guardar solicitudes,
+              cotizaciones y progreso.
+            </p>
+          </div>
+          <button class="auth-close-btn" type="button" onclick="closeModalBg()">
+            ×
+          </button>
+        </div>
+
+        <div class="modal-tabs">
+          <button
+            class="modal-tab active"
+            id="tab-login"
+            type="button"
+            onclick="switchTab('login')"
+          >
+            Iniciar sesión
+          </button>
+          <button
+            class="modal-tab"
+            id="tab-register"
+            type="button"
+            onclick="switchTab('register')"
+          >
+            Registrarse
+          </button>
+        </div>
+
+        <form id="form-login" class="auth-form">
+          <div class="auth-field">
+            <label class="form-label" for="login-email">Email</label>
+            <div class="auth-input-shell">
+              <svg viewBox="0 0 32 32" aria-hidden="true">
+                <path
+                  d="M30.85 13.87A15 15 0 1 0 24 28.85a1 1 0 0 0-1.03-1.71A13 13 0 1 1 28.16 20.6 2.15 2.15 0 0 1 24 19.85V9a1 1 0 1 0-2 0v1.73A8 8 0 1 0 22.2 21a4.14 4.14 0 0 0 7.83.27 15.2 15.2 0 0 0 .82-7.4ZM16 22a6 6 0 1 1 6-6 6 6 0 0 1-6 6Z"
+                />
+              </svg>
+              <input
+                type="email"
+                class="auth-input"
+                id="login-email"
+                placeholder="tu@email.com"
+                required
+              />
+            </div>
+          </div>
+          <div class="auth-field">
+            <label class="form-label" for="login-password">Contraseña</label>
+            <div class="auth-input-shell">
+              <svg viewBox="-64 0 512 512" aria-hidden="true">
+                <path
+                  d="M336 512H48c-26.45 0-48-21.52-48-48V240c0-26.48 21.55-48 48-48h288c26.45 0 48 21.52 48 48v224c0 26.48-21.55 48-48 48ZM48 224c-8.81 0-16 7.17-16 16v224c0 8.83 7.19 16 16 16h288c8.81 0 16-7.17 16-16V240c0-8.83-7.19-16-16-16Z"
+                />
+                <path
+                  d="M304 224c-8.83 0-16-7.17-16-16v-80c0-52.93-43.07-96-96-96s-96 43.07-96 96v80c0 8.83-7.17 16-16 16s-16-7.17-16-16v-80C64 57.41 121.41 0 192 0s128 57.41 128 128v80c0 8.83-7.17 16-16 16Z"
+                />
+              </svg>
+              <input
+                type="password"
+                class="auth-input"
+                id="login-password"
+                placeholder="Tu contraseña"
+                required
+              />
+              <button
+                class="auth-eye-btn"
+                type="button"
+                onclick="togglePasswordVisibility('login-password', this)"
+                aria-label="Mostrar contraseña"
+              >
+                <svg viewBox="0 0 576 512" aria-hidden="true">
+                  <path
+                    d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7a32 32 0 0 0 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1a32 32 0 0 0 0-24.6C558.7 208 527.4 156 480.6 112.6 433.5 68.8 368.8 32 288 32Zm0 368a144 144 0 1 1 0-288 144 144 0 0 1 0 288Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="auth-options">
+            <label class="auth-check"
+              ><input type="checkbox" id="login-remember" /> Recordarme</label
+            >
+            <button
+              class="auth-link-btn"
+              type="button"
+              onclick="
+                toast(
+                  'Por ahora pide al administrador restablecer tu contraseña.',
+                  'info',
+                )
+              "
+            >
+              ¿Olvidaste tu contraseña?
             </button>
           </div>
-          <div class="sidebar-label" style="margin-top:20px">Cuenta</div>
-          <button class="sidebar-link" type="button" onclick="setClientTab('settings', this)">
-            <span class="sidebar-icon">⚙️</span> Configuración
+          <button class="auth-submit-btn" type="submit">
+            Entrar a mi panel
           </button>
-          <button class="sidebar-link" type="button" onclick="logout()">
-            <span class="sidebar-icon">🚪</span> Cerrar sesión
-          </button>
-        </aside>
-
-        <main class="client-main">
-          <div id="ctab-overview"></div>
-          <div id="ctab-schedule" class="hidden"></div>
-          <div id="ctab-history" class="hidden"></div>
-          <div id="ctab-settings" class="hidden"></div>
-          <div id="ctab-wizard" class="hidden"></div>
-        </main>
-      </div>
-    </div>
-  </div>
-
-  <div id="admin-panel-view" class="view">
-    <div id="admin-panel">
-      <div class="admin-layout">
-        <aside class="admin-sidebar">
-          <div style="padding:12px;margin-bottom:20px">
-            <div class="nav-logo" style="font-size:1.1rem">TISNET</div>
-            <div id="admin-panel-role-caption" style="font-size:.7rem;color:var(--text-muted);margin-top:2px">Panel Administrador</div>
-          </div>
-
-          <div class="admin-section-label">Principal</div>
-          <button class="sidebar-link active" data-admin-tab="dashboard" type="button" onclick="setAdminTab('dashboard', this)">
-            <span class="sidebar-icon">📊</span> Dashboard
-          </button>
-          <button class="sidebar-link" data-admin-tab="crm" type="button" onclick="setAdminTab('crm', this)">
-            <span class="sidebar-icon">👥</span> CRM
-          </button>
-          <button class="sidebar-link" data-admin-tab="projects" data-role-scope="admin" type="button" onclick="setAdminTab('projects', this)">
-            <span class="sidebar-icon">🗂</span> Proyectos
-          </button>
-          <button class="sidebar-link" data-admin-tab="clients" type="button" onclick="setAdminTab('clients', this)">
-            <span class="sidebar-icon">🤝</span> Clientes
-          </button>
-
-          <div class="admin-section-label">Operación</div>
-          <button class="sidebar-link" data-admin-tab="calendar" type="button" onclick="setAdminTab('calendar', this)">
-            <span class="sidebar-icon">📅</span> Calendario
-          </button>
-          <button class="sidebar-link" data-admin-tab="reports" type="button" onclick="setAdminTab('reports', this)">
-            <span class="sidebar-icon">📈</span> Reportes
-          </button>
-
-          <div class="admin-section-label">Sistema</div>
-          <button class="sidebar-link" data-admin-tab="settings" data-role-scope="admin" type="button" onclick="setAdminTab('settings', this)">
-            <span class="sidebar-icon">⚙️</span> Configuración
-          </button>
-          <button class="sidebar-link" type="button" onclick="logout()">
-            <span class="sidebar-icon">🚪</span> Salir
-          </button>
-        </aside>
-
-        <main class="admin-main">
-          <div id="atab-dashboard"></div>
-          <div id="atab-crm" class="hidden"></div>
-          <div id="atab-projects" class="hidden"></div>
-          <div id="atab-clients" class="hidden"></div>
-          <div id="atab-calendar" class="hidden"></div>
-          <div id="atab-reports" class="hidden"></div>
-          <div id="atab-settings" class="hidden"></div>
-        </main>
-      </div>
-    </div>
-  </div>
-
-  <div class="modal-bg hidden" id="admin-client-modal-bg" onclick="closeAdminClientDetail(event)">
-    <div class="modal modal-wide admin-client-modal" onclick="event.stopPropagation()">
-      <div class="modal-header-row">
-        <div>
-          <div class="modal-logo">Clientes</div>
-          <h3 class="panel-title" id="admin-client-modal-title">Vista detallada del cliente</h3>
-          <p class="panel-sub" id="admin-client-modal-subtitle">Datos generales, respuestas del formulario, cotización y progreso.</p>
-        </div>
-        <button class="close-btn" type="button" onclick="closeAdminClientDetail()">Cerrar</button>
-      </div>
-      <div id="admin-client-modal-content"></div>
-    </div>
-  </div>
-
-  <button id="wabtn" type="button" onclick="openWA()">
-    <img class="wa-icon-image" src="img/wstapicon.png?v=20260424b" alt="TISNET en WhatsApp">
-    <span>💬</span>
-    <div class="wa-tooltip">Hablar con TISNET por WhatsApp</div>
-  </button>
-
-  <div class="modal-bg hidden" id="modal-bg" onclick="closeModalBg(event)">
-    <div class="modal auth-modal" onclick="event.stopPropagation()">
-      <div class="auth-card-top">
-        <div>
-          <div class="modal-logo">TISNET</div>
-          <p class="modal-sub" id="modal-sub">Accede a tu panel o crea tu cuenta para guardar solicitudes, cotizaciones y progreso.</p>
-        </div>
-        <button class="auth-close-btn" type="button" onclick="closeModalBg()">×</button>
-      </div>
-
-      <div class="modal-tabs">
-        <button class="modal-tab active" id="tab-login" type="button" onclick="switchTab('login')">Iniciar sesión</button>
-        <button class="modal-tab" id="tab-register" type="button" onclick="switchTab('register')">Registrarse</button>
-      </div>
-
-      <form id="form-login" class="auth-form">
-        <div class="auth-field">
-          <label class="form-label" for="login-email">Email</label>
-          <div class="auth-input-shell">
-            <svg viewBox="0 0 32 32" aria-hidden="true"><path d="M30.85 13.87A15 15 0 1 0 24 28.85a1 1 0 0 0-1.03-1.71A13 13 0 1 1 28.16 20.6 2.15 2.15 0 0 1 24 19.85V9a1 1 0 1 0-2 0v1.73A8 8 0 1 0 22.2 21a4.14 4.14 0 0 0 7.83.27 15.2 15.2 0 0 0 .82-7.4ZM16 22a6 6 0 1 1 6-6 6 6 0 0 1-6 6Z"/></svg>
-            <input type="email" class="auth-input" id="login-email" placeholder="tu@email.com" required>
-          </div>
-        </div>
-        <div class="auth-field">
-          <label class="form-label" for="login-password">Contraseña</label>
-          <div class="auth-input-shell">
-            <svg viewBox="-64 0 512 512" aria-hidden="true"><path d="M336 512H48c-26.45 0-48-21.52-48-48V240c0-26.48 21.55-48 48-48h288c26.45 0 48 21.52 48 48v224c0 26.48-21.55 48-48 48ZM48 224c-8.81 0-16 7.17-16 16v224c0 8.83 7.19 16 16 16h288c8.81 0 16-7.17 16-16V240c0-8.83-7.19-16-16-16Z"/><path d="M304 224c-8.83 0-16-7.17-16-16v-80c0-52.93-43.07-96-96-96s-96 43.07-96 96v80c0 8.83-7.17 16-16 16s-16-7.17-16-16v-80C64 57.41 121.41 0 192 0s128 57.41 128 128v80c0 8.83-7.17 16-16 16Z"/></svg>
-            <input type="password" class="auth-input" id="login-password" placeholder="Tu contraseña" required>
-            <button class="auth-eye-btn" type="button" onclick="togglePasswordVisibility('login-password', this)" aria-label="Mostrar contraseña">
-              <svg viewBox="0 0 576 512" aria-hidden="true"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7a32 32 0 0 0 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1a32 32 0 0 0 0-24.6C558.7 208 527.4 156 480.6 112.6 433.5 68.8 368.8 32 288 32Zm0 368a144 144 0 1 1 0-288 144 144 0 0 1 0 288Z"/></svg>
+          <p class="auth-switch-copy">
+            ¿No tienes cuenta?
+            <button type="button" onclick="switchTab('register')">
+              Crear cuenta
             </button>
+          </p>
+        </form>
+
+        <form id="form-register" class="auth-form hidden">
+          <div class="auth-field">
+            <label class="form-label" for="register-name"
+              >Nombre completo</label
+            >
+            <input
+              type="text"
+              class="form-input auth-soft-input"
+              id="register-name"
+              placeholder="Tu nombre completo"
+              required
+            />
           </div>
-        </div>
-        <div class="auth-options">
-          <label class="auth-check"><input type="checkbox" id="login-remember"> Recordarme</label>
-          <button class="auth-link-btn" type="button" onclick="toast('Por ahora pide al administrador restablecer tu contraseña.', 'info')">¿Olvidaste tu contraseña?</button>
-        </div>
-        <button class="auth-submit-btn" type="submit">Entrar a mi panel</button>
-        <p class="auth-switch-copy">¿No tienes cuenta? <button type="button" onclick="switchTab('register')">Crear cuenta</button></p>
-      </form>
-
-      <form id="form-register" class="auth-form hidden">
-        <div class="auth-field">
-          <label class="form-label" for="register-name">Nombre completo</label>
-          <input type="text" class="form-input auth-soft-input" id="register-name" placeholder="Tu nombre completo" required>
-        </div>
-        <div class="auth-field">
-          <label class="form-label" for="register-email">Email</label>
-          <input type="email" class="form-input auth-soft-input" id="register-email" placeholder="tu@empresa.com" required>
-        </div>
-        <div class="auth-field">
-          <label class="form-label" for="register-phone">Telefono</label>
-          <div class="phone-input-shell auth-phone-shell">
-            <span class="phone-input-prefix">+51</span>
-            <input class="form-input phone-input-control" id="register-phone" name="phone" type="text" inputmode="numeric" maxlength="9" placeholder="999999999" autocomplete="tel-national" required>
+          <div class="auth-field">
+            <label class="form-label" for="register-email">Email</label>
+            <input
+              type="email"
+              class="form-input auth-soft-input"
+              id="register-email"
+              placeholder="tu@empresa.com"
+              required
+            />
           </div>
-        </div>
-        <div class="auth-field">
-          <label class="form-label" for="register-company">Empresa (opcional)</label>
-          <input type="text" class="form-input auth-soft-input" id="register-company" placeholder="Nombre de tu empresa">
-        </div>
-        <div class="auth-field">
-          <label class="form-label" for="register-website">Red social (opcional)</label>
-          <input type="text" class="form-input auth-soft-input" id="register-website" placeholder="@tuempresa o https://instagram.com/tuempresa">
-        </div>
-        <div class="auth-field">
-          <label class="form-label" for="register-password">Contraseña</label>
-          <div class="auth-input-shell">
-            <svg viewBox="-64 0 512 512" aria-hidden="true"><path d="M336 512H48c-26.45 0-48-21.52-48-48V240c0-26.48 21.55-48 48-48h288c26.45 0 48 21.52 48 48v224c0 26.48-21.55 48-48 48ZM48 224c-8.81 0-16 7.17-16 16v224c0 8.83 7.19 16 16 16h288c8.81 0 16-7.17 16-16V240c0-8.83-7.19-16-16-16Z"/><path d="M304 224c-8.83 0-16-7.17-16-16v-80c0-52.93-43.07-96-96-96s-96 43.07-96 96v80c0 8.83-7.17 16-16 16s-16-7.17-16-16v-80C64 57.41 121.41 0 192 0s128 57.41 128 128v80c0 8.83-7.17 16-16 16Z"/></svg>
-            <input type="password" class="auth-input" id="register-password" placeholder="Mínimo 8 caracteres" required>
-            <button class="auth-eye-btn" type="button" onclick="togglePasswordVisibility('register-password', this)" aria-label="Mostrar contraseña">
-              <svg viewBox="0 0 576 512" aria-hidden="true"><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7a32 32 0 0 0 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1a32 32 0 0 0 0-24.6C558.7 208 527.4 156 480.6 112.6 433.5 68.8 368.8 32 288 32Zm0 368a144 144 0 1 1 0-288 144 144 0 0 1 0 288Z"/></svg>
-            </button>
+          <div class="auth-field">
+            <label class="form-label" for="register-phone">Telefono</label>
+            <div class="phone-input-shell auth-phone-shell">
+              <span class="phone-input-prefix">+51</span>
+              <input
+                class="form-input phone-input-control"
+                id="register-phone"
+                name="phone"
+                type="text"
+                inputmode="numeric"
+                maxlength="9"
+                placeholder="999999999"
+                autocomplete="tel-national"
+                required
+              />
+            </div>
           </div>
-        </div>
-        <button class="auth-submit-btn" type="submit">Crear cuenta gratuita</button>
-      </form>
+          <div class="auth-field">
+            <label class="form-label" for="register-company"
+              >Empresa (opcional)</label
+            >
+            <input
+              type="text"
+              class="form-input auth-soft-input"
+              id="register-company"
+              placeholder="Nombre de tu empresa"
+            />
+          </div>
+          <div class="auth-field">
+            <label class="form-label" for="register-website"
+              >Red social (opcional)</label
+            >
+            <input
+              type="text"
+              class="form-input auth-soft-input"
+              id="register-website"
+              placeholder="@tuempresa o https://instagram.com/tuempresa"
+            />
+          </div>
+          <div class="auth-field">
+            <label class="form-label" for="register-password">Contraseña</label>
+            <div class="auth-input-shell">
+              <svg viewBox="-64 0 512 512" aria-hidden="true">
+                <path
+                  d="M336 512H48c-26.45 0-48-21.52-48-48V240c0-26.48 21.55-48 48-48h288c26.45 0 48 21.52 48 48v224c0 26.48-21.55 48-48 48ZM48 224c-8.81 0-16 7.17-16 16v224c0 8.83 7.19 16 16 16h288c8.81 0 16-7.17 16-16V240c0-8.83-7.19-16-16-16Z"
+                />
+                <path
+                  d="M304 224c-8.83 0-16-7.17-16-16v-80c0-52.93-43.07-96-96-96s-96 43.07-96 96v80c0 8.83-7.17 16-16 16s-16-7.17-16-16v-80C64 57.41 121.41 0 192 0s128 57.41 128 128v80c0 8.83-7.17 16-16 16Z"
+                />
+              </svg>
+              <input
+                type="password"
+                class="auth-input"
+                id="register-password"
+                placeholder="Mínimo 8 caracteres"
+                required
+              />
+              <button
+                class="auth-eye-btn"
+                type="button"
+                onclick="togglePasswordVisibility('register-password', this)"
+                aria-label="Mostrar contraseña"
+              >
+                <svg viewBox="0 0 576 512" aria-hidden="true">
+                  <path
+                    d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7a32 32 0 0 0 0 24.6C17.3 304 48.6 356 95.4 399.4 142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1a32 32 0 0 0 0-24.6C558.7 208 527.4 156 480.6 112.6 433.5 68.8 368.8 32 288 32Zm0 368a144 144 0 1 1 0-288 144 144 0 0 1 0 288Z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button class="auth-submit-btn" type="submit">
+            Crear cuenta gratuita
+          </button>
+        </form>
 
-      <p class="modal-footer">Al continuar aceptas nuestros términos de uso y política de contacto comercial.</p>
+        <p class="modal-footer">
+          Al continuar aceptas nuestros términos de uso y política de contacto
+          comercial.
+        </p>
+      </div>
     </div>
-  </div>
 
-  <div class="modal-bg hidden" id="case-modal-bg" onclick="closeCaseModal(event)">
-    <div class="modal modal-wide case-modal" onclick="event.stopPropagation()">
-      <div class="modal-header-row">
-        <div>
-          <div class="modal-logo" id="case-modal-category">Caso</div>
-          <h3 class="panel-title" id="case-modal-title">Proyecto destacado</h3>
+    <div
+      class="modal-bg hidden"
+      id="case-modal-bg"
+      onclick="closeCaseModal(event)"
+    >
+      <div
+        class="modal modal-wide case-modal"
+        onclick="event.stopPropagation()"
+      >
+        <div class="modal-header-row">
+          <div>
+            <div class="modal-logo" id="case-modal-category">Caso</div>
+            <h3 class="panel-title" id="case-modal-title">
+              Proyecto destacado
+            </h3>
+          </div>
+          <button class="close-btn" type="button" onclick="closeCaseModal()">
+            Cerrar
+          </button>
         </div>
-        <button class="close-btn" type="button" onclick="closeCaseModal()">Cerrar</button>
-      </div>
-      <p class="panel-sub" id="case-modal-description"></p>
-      <div class="case-highlights" id="case-modal-highlights"></div>
-      <div class="case-modal-layout">
-        <div class="case-modal-copy">
-          <div class="case-metrics-strip" id="case-modal-metrics"></div>
+        <p class="panel-sub" id="case-modal-description"></p>
+        <div class="case-highlights" id="case-modal-highlights"></div>
+        <div class="case-modal-layout">
+          <div class="case-modal-copy">
+            <div class="case-metrics-strip" id="case-modal-metrics"></div>
+          </div>
+          <div class="case-mockup-stage" id="case-modal-mockups"></div>
         </div>
-        <div class="case-mockup-stage" id="case-modal-mockups"></div>
       </div>
     </div>
-  </div>
 
-  <div class="modal-bg hidden" id="schedule-modal-bg" onclick="closeScheduleModal(event)">
-    <div class="modal modal-wide schedule-modal" onclick="event.stopPropagation()">
-      <div class="modal-header-row">
-        <div>
-          <div class="modal-logo" id="schedule-modal-label">Calendly</div>
-          <h3 class="panel-title" id="schedule-modal-title">Agenda una reunión</h3>
+    <div
+      class="modal-bg hidden"
+      id="schedule-modal-bg"
+      onclick="closeScheduleModal(event)"
+    >
+      <div
+        class="modal modal-wide schedule-modal"
+        onclick="event.stopPropagation()"
+      >
+        <div class="modal-header-row">
+          <div>
+            <div class="modal-logo" id="schedule-modal-label">Calendly</div>
+            <h3 class="panel-title" id="schedule-modal-title">
+              Agenda una reunión
+            </h3>
+          </div>
+          <button
+            class="close-btn"
+            type="button"
+            onclick="closeScheduleModal()"
+          >
+            Cerrar
+          </button>
         </div>
-        <button class="close-btn" type="button" onclick="closeScheduleModal()">Cerrar</button>
+        <p class="panel-sub" id="schedule-modal-description">
+          El calendario se carga dentro del sitio usando el embed oficial de
+          Calendly.
+        </p>
+        <div class="schedule-switch hidden" id="schedule-switch">
+          <button
+            class="btn btn-primary"
+            type="button"
+            onclick="openScheduleModal('client-review')"
+          >
+            Revisión de avances
+          </button>
+          <button
+            class="btn btn-outline"
+            type="button"
+            onclick="openScheduleModal('client-close')"
+          >
+            Reunión de cierre
+          </button>
+        </div>
+        <div class="schedule-shell">
+          <div id="calendly-embed" class="calendly-host"></div>
+        </div>
+        <p class="inline-note" id="schedule-feedback">
+          Si el Calendly todavía no está configurado, puedes reemplazar la URL
+          desde el panel admin.
+        </p>
       </div>
-      <p class="panel-sub" id="schedule-modal-description">El calendario se carga dentro del sitio usando el embed oficial de Calendly.</p>
-      <div class="schedule-switch hidden" id="schedule-switch">
-        <button class="btn btn-primary" type="button" onclick="openScheduleModal('client-review')">Revisión de avances</button>
-        <button class="btn btn-outline" type="button" onclick="openScheduleModal('client-close')">Reunión de cierre</button>
-      </div>
-      <div class="schedule-shell">
-        <div id="calendly-embed" class="calendly-host"></div>
-      </div>
-      <p class="inline-note" id="schedule-feedback">Si el Calendly todavía no está configurado, puedes reemplazar la URL desde el panel admin.</p>
     </div>
-  </div>
 
-  <div class="toast-stack" id="toast-stack"></div>
+    <div class="toast-stack" id="toast-stack"></div>
 
-  <script src="src/assets/js/script.js"></script>
-</body>
+    <script src="src/assets/js/script.js"></script>
+  </body>
 </html>
