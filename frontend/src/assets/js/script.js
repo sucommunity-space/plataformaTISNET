@@ -379,7 +379,7 @@ const TEAM_EXPERTS = [
     bio: 'Define el enfoque del proyecto, ordena las prioridades y asegura que cada decisión esté alineada con los objetivos del negocio.',
     focus: ['Estrategia comercial', 'Planificación', 'Visión de crecimiento'],
     monogram: 'LE',
-    image: 'img/team/perso1.png',
+    image: 'src/assets/img/team/perso1.png',
     surfaceStart: 'rgba(0,212,255,.24)',
     surfaceEnd: 'rgba(10,102,194,.16)',
     glow: 'rgba(0,212,255,.4)',
@@ -390,7 +390,7 @@ const TEAM_EXPERTS = [
     bio: 'Crea interfaces modernas, intuitivas y enfocadas en que el usuario navegue fácil, entienda la propuesta y tome acción.',
     focus: ['Diseño visual', 'Experiencia de usuario', 'Diseño responsive'],
     monogram: 'UX',
-    image: 'img/team/perso2.png',
+    image: 'src/assets/img/team/perso2.png',
     surfaceStart: 'rgba(77,163,255,.2)',
     surfaceEnd: 'rgba(25,40,82,.16)',
     glow: 'rgba(77,163,255,.34)',
@@ -401,7 +401,7 @@ const TEAM_EXPERTS = [
     bio: 'Diseña flujos para captar contactos, registrar solicitudes, organizar seguimientos y mejorar la comunicación con tus clientes.',
     focus: ['Formularios inteligentes', 'Seguimiento comercial', 'Automatización'],
     monogram: 'AT',
-    image: 'img/team/perso3.png',
+    image: 'src/assets/img/team/perso3.png',
     surfaceStart: 'rgba(19,191,163,.24)',
     surfaceEnd: 'rgba(7,70,74,.16)',
     glow: 'rgba(19,191,163,.32)',
@@ -412,7 +412,7 @@ const TEAM_EXPERTS = [
     bio: 'Se encarga de construir la parte técnica, conectar herramientas y asegurar que tu plataforma funcione de forma rápida, estable y segura.',
     focus: ['Frontend y backend', 'Integraciones API', 'Rendimiento web'],
     monogram: 'DQ',
-    image: 'img/team/perso4.png',
+    image: 'src/assets/img/team/perso4.png',
     surfaceStart: 'rgba(245,158,11,.22)',
     surfaceEnd: 'rgba(66,37,10,.18)',
     glow: 'rgba(245,158,11,.26)',
@@ -1361,12 +1361,12 @@ function buildHomeShowcaseCard(item, index) {
 
         <div class="home-showcase-chip-row">
           ${highlights
-            .map(
-              (highlight) => `
+      .map(
+        (highlight) => `
                 <span class="home-showcase-chip">${escapeHtml(highlight)}</span>
               `
-            )
-            .join('')}
+      )
+      .join('')}
         </div>
       </div>
     </article>
@@ -1637,9 +1637,8 @@ function renderTeamExperts() {
           <span class="expert-badge">${escapeHtml(expert.role)}</span>
           <div class="expert-portrait-shell ${expert.image ? 'has-photo' : ''}" aria-hidden="true">
             <div class="expert-portrait ${expert.image ? 'has-photo' : ''}">
-              ${
-                expert.image
-                  ? `
+              ${expert.image
+        ? `
                     <img
                       class="expert-photo"
                       src="${escapeAttribute(expert.image)}"
@@ -1648,8 +1647,8 @@ function renderTeamExperts() {
                     >
                     <div class="expert-photo-overlay"></div>
                   `
-                  : `<span>${escapeHtml(expert.monogram || initials(expert.name))}</span>`
-              }
+        : `<span>${escapeHtml(expert.monogram || initials(expert.name))}</span>`
+      }
             </div>
           </div>
         </div>
@@ -1659,12 +1658,12 @@ function renderTeamExperts() {
           <p class="expert-copy">${escapeHtml(expert.bio)}</p>
           <div class="expert-focus-list">
             ${expert.focus
-              .map(
-                (item) => `
+        .map(
+          (item) => `
                   <span class="expert-focus-chip">${escapeHtml(item)}</span>
                 `
-              )
-              .join('')}
+        )
+        .join('')}
           </div>
         </div>
       </article>
@@ -1756,15 +1755,15 @@ function buildCaseMockups(item) {
             <p class="case-mockup-copy">${escapeHtml(mockup.copy)}</p>
             <div class="case-mockup-tags">
               ${bullets
-                .slice(0, 3)
-                .map(
-                  (bullet, bulletIndex) => `
+          .slice(0, 3)
+          .map(
+            (bullet, bulletIndex) => `
                     <span class="case-mockup-tag ${bulletIndex === 0 ? 'is-solid' : ''}">
                       ${escapeHtml(bullet)}
                     </span>
                   `
-                )
-                .join('')}
+          )
+          .join('')}
             </div>
           </div>
           <div class="case-mockup-glow">${escapeHtml(palette.icon)}</div>
@@ -2051,9 +2050,8 @@ function renderClientDashboard() {
         <div class="section-row">
           <h3 class="table-title">Resumen</h3>
         </div>
-        ${
-          data.diagnostic
-            ? `
+        ${data.diagnostic
+      ? `
               <div class="summary-block">
                 <strong>Etapa:</strong> ${escapeHtml(capitalize(data.diagnostic.business_stage))}
               </div>
@@ -2067,8 +2065,8 @@ function renderClientDashboard() {
                 <strong>Objetivo:</strong> ${escapeHtml(data.diagnostic.goal || 'Sin detalle')}
               </div>
             `
-            : renderEmptyState('Cuando guardes el diagnóstico se mostrará aquí.')
-        }
+      : renderEmptyState('Cuando guardes el diagnóstico se mostrará aquí.')
+    }
       </div>
     </div>
   `;
@@ -2614,9 +2612,8 @@ function renderClientEvaluationPanel(data) {
         </div>
         <span class="badge ${evaluation ? 'badge-active' : 'badge-pending'}">${evaluation ? 'Publicado' : 'Pendiente'}</span>
       </div>
-      ${
-        evaluation
-          ? `
+      ${evaluation
+      ? `
             <div class="summary-block"><strong>${escapeHtml(evaluation.title)}</strong></div>
             <div class="summary-block">${escapeHtml(evaluation.note || 'Evaluacion publicada para revision.')}</div>
             <div class="action-row">
@@ -2625,8 +2622,8 @@ function renderClientEvaluationPanel(data) {
               <button class="btn btn-ghost" type="button" onclick="handleClientProcessAction('feedback_diagnostic')">Retroalimentar</button>
             </div>
           `
-          : renderEmptyState('Todavia no hay evaluacion publicada por el equipo.')
-      }
+      : renderEmptyState('Todavia no hay evaluacion publicada por el equipo.')
+    }
     </div>
   `;
 }
@@ -2665,8 +2662,8 @@ function renderMeetingsList(meetings) {
   return `
     <div class="list-stack">
       ${meetings
-        .map(
-          (meeting) => `
+      .map(
+        (meeting) => `
             <div class="list-item">
               <div>
                 <strong>${escapeHtml(meeting.meeting_type)}</strong>
@@ -2675,8 +2672,8 @@ function renderMeetingsList(meetings) {
               <span class="badge badge-active">${escapeHtml(meeting.status)}</span>
             </div>
           `
-        )
-        .join('')}
+      )
+      .join('')}
     </div>
   `;
 }
@@ -2699,8 +2696,8 @@ function renderRecentLeadsTable(leads) {
         </thead>
         <tbody>
           ${leads
-            .map(
-              (lead) => `
+      .map(
+        (lead) => `
                 <tr>
                   <td>${escapeHtml(lead.full_name)}</td>
                   <td>${escapeHtml(serviceLabel(lead.service_type))}</td>
@@ -2708,8 +2705,8 @@ function renderRecentLeadsTable(leads) {
                   <td>${formatDate(lead.created_at)}</td>
                 </tr>
               `
-            )
-            .join('')}
+      )
+      .join('')}
         </tbody>
       </table>
     </div>
@@ -2879,11 +2876,10 @@ function renderFeedbackRequestsPanel(requests) {
         </div>
         <span class="badge ${pending.length ? 'badge-active' : 'badge-done'}">${pending.length} pendiente${pending.length === 1 ? '' : 's'}</span>
       </div>
-      ${
-        list.length
-          ? `<div class="feedback-request-list">${list.slice(0, 6).map(renderFeedbackRequestRow).join('')}</div>`
-          : renderEmptyState('No hay solicitudes de retroalimentacion por ahora.')
-      }
+      ${list.length
+      ? `<div class="feedback-request-list">${list.slice(0, 6).map(renderFeedbackRequestRow).join('')}</div>`
+      : renderEmptyState('No hay solicitudes de retroalimentacion por ahora.')
+    }
     </div>
   `;
 }
@@ -3046,9 +3042,9 @@ function renderClientsOverview(clients) {
   return `
     <div class="client-cards-grid">
       ${clients
-        .slice(0, 6)
-        .map(
-          (client) => `
+      .slice(0, 6)
+      .map(
+        (client) => `
             <article class="client-overview-card">
               <div class="client-overview-top">
                 <div>
@@ -3074,8 +3070,8 @@ function renderClientsOverview(clients) {
               </div>
             </article>
           `
-        )
-        .join('')}
+      )
+      .join('')}
     </div>
   `;
 }
@@ -3091,23 +3087,22 @@ function renderLeadBoard(leads) {
   return `
     <div class="kanban-board">
       ${columns
-        .map((column) => {
-          const items = leads.filter((lead) => lead.status === column.key);
-          return `
+      .map((column) => {
+        const items = leads.filter((lead) => lead.status === column.key);
+        return `
             <div class="kanban-col drop-zone" data-board="lead" data-status="${column.key}">
               <div class="kanban-col-header">
                 <span class="kanban-col-title">${column.title}</span>
                 <span class="kanban-count">${items.length}</span>
               </div>
-              ${
-                items.length
-                  ? items.map((lead) => renderLeadCard(lead)).join('')
-                  : '<div class="empty-zone">Suelta un lead aquí</div>'
-              }
+              ${items.length
+            ? items.map((lead) => renderLeadCard(lead)).join('')
+            : '<div class="empty-zone">Suelta un lead aquí</div>'
+          }
             </div>
           `;
-        })
-        .join('')}
+      })
+      .join('')}
     </div>
   `;
 }
@@ -3128,17 +3123,15 @@ function renderLeadCard(lead) {
       <div class="kc-service">${escapeHtml(serviceLabel(lead.service_type))} · ${escapeHtml(lead.company || 'Sin empresa')}</div>
       <div class="kc-email">${escapeHtml(lead.email)}</div>
       <div class="kc-message">${escapeHtml((lead.message || 'Sin contexto registrado.').slice(0, 120))}</div>
-      ${
-        hasQuote
-          ? `<div class="kc-next"><strong>Cotización lista:</strong> ${escapeHtml(lead.quote_label || 'Cotización web')} · ${formatCurrency(lead.quote_total)}</div>`
-          : ''
-      }
+      ${hasQuote
+      ? `<div class="kc-next"><strong>Cotización lista:</strong> ${escapeHtml(lead.quote_label || 'Cotización web')} · ${formatCurrency(lead.quote_total)}</div>`
+      : ''
+    }
       <div class="kc-next"><strong>Siguiente paso:</strong> ${escapeHtml(nextAction)}</div>
-      ${
-        lead.project_id
-          ? `<div class="kc-next"><strong>Proyecto vinculado:</strong> ${escapeHtml(lead.project_title || 'Proyecto creado')}</div>`
-          : ''
-      }
+      ${lead.project_id
+      ? `<div class="kc-next"><strong>Proyecto vinculado:</strong> ${escapeHtml(lead.project_title || 'Proyecto creado')}</div>`
+      : ''
+    }
       <div class="kc-actions">
         ${canConvert ? `<button class="btn btn-primary" type="button" onclick="convertLeadToProject(${lead.id})">Convertir</button>` : ''}
         <button class="btn btn-ghost" type="button" onclick="window.open('${escapeAttribute(mailto)}', '_blank')">Email</button>
@@ -3163,23 +3156,22 @@ function renderProjectBoard(projects) {
   return `
     <div class="kanban-board">
       ${columns
-        .map((column) => {
-          const items = projects.filter((project) => project.admin_status === column.key);
-          return `
+      .map((column) => {
+        const items = projects.filter((project) => project.admin_status === column.key);
+        return `
             <div class="kanban-col drop-zone" data-board="project" data-status="${column.key}">
               <div class="kanban-col-header">
                 <span class="kanban-col-title">${column.title}</span>
                 <span class="kanban-count">${items.length}</span>
               </div>
-              ${
-                items.length
-                  ? items.map((project) => renderProjectCard(project)).join('')
-                  : '<div class="empty-zone">Suelta un proyecto aquí</div>'
-              }
+              ${items.length
+            ? items.map((project) => renderProjectCard(project)).join('')
+            : '<div class="empty-zone">Suelta un proyecto aquí</div>'
+          }
             </div>
           `;
-        })
-        .join('')}
+      })
+      .join('')}
     </div>
   `;
 }
@@ -3238,9 +3230,8 @@ function renderTaskOpsSummary(taskMetrics) {
           </div>
           <span class="insight-badge neutral">${summary.completionRate || 0}% avance total</span>
         </div>
-        ${
-          topMember
-            ? `
+        ${topMember
+      ? `
               <div class="task-top-member">
                 <div class="task-top-member-avatar" style="background:${escapeAttribute(topMember.accent_color || 'var(--primary)')}">
                   ${escapeHtml(initials(topMember.full_name))}
@@ -3262,8 +3253,8 @@ function renderTaskOpsSummary(taskMetrics) {
               </div>
               <p class="inline-note">Ultima actividad: ${topMember.last_activity ? timeAgo(topMember.last_activity) : 'sin movimiento reciente'}.</p>
             `
-            : '<div class="empty-state">Todavia no hay suficiente actividad para comparar responsables.</div>'
-        }
+      : '<div class="empty-state">Todavia no hay suficiente actividad para comparar responsables.</div>'
+    }
       </div>
     </div>
   `;
@@ -3280,23 +3271,22 @@ function renderTaskBoard(tasks) {
   return `
     <div class="kanban-board kanban-board-triple">
       ${columns
-        .map((column) => {
-          const items = list.filter((task) => task.status === column.key);
-          return `
+      .map((column) => {
+        const items = list.filter((task) => task.status === column.key);
+        return `
             <div class="kanban-col drop-zone" data-board="task" data-status="${column.key}">
               <div class="kanban-col-header">
                 <span class="kanban-col-title">${escapeHtml(column.title)}</span>
                 <span class="kanban-count">${items.length}</span>
               </div>
-              ${
-                items.length
-                  ? items.map((task) => renderTaskCard(task)).join('')
-                  : '<div class="empty-zone">Suelta una tarea aqui</div>'
-              }
+              ${items.length
+            ? items.map((task) => renderTaskCard(task)).join('')
+            : '<div class="empty-zone">Suelta una tarea aqui</div>'
+          }
             </div>
           `;
-        })
-        .join('')}
+      })
+      .join('')}
     </div>
   `;
 }
@@ -3326,26 +3316,26 @@ function renderTaskCard(task) {
         <select class="form-input form-select task-inline-select" id="task-assignee-${task.id}" onchange="updateAdminTaskAssignee(${task.id}, this.value)">
           <option value="">Sin responsable</option>
           ${teamMembers
-            .map(
-              (member) => `
+      .map(
+        (member) => `
                 <option value="${member.id}" ${Number(member.id) === Number(task.assignee_id) ? 'selected' : ''}>
                   ${escapeHtml(member.full_name)} · ${escapeHtml(member.role_title)}
                 </option>
               `
-            )
-            .join('')}
+      )
+      .join('')}
         </select>
       </div>
       <div class="task-field">
         <label class="task-inline-label" for="task-status-${task.id}">Estado</label>
         <select class="form-input form-select task-inline-select" id="task-status-${task.id}" onchange="updateAdminTaskStatus(${task.id}, this.value)">
           ${['pending', 'in_progress', 'done']
-            .map(
-              (status) => `
+      .map(
+        (status) => `
                 <option value="${status}" ${status === task.status ? 'selected' : ''}>${escapeHtml(taskStatusLabel(status))}</option>
               `
-            )
-            .join('')}
+      )
+      .join('')}
         </select>
       </div>
       <div class="kc-footer">
@@ -3367,8 +3357,8 @@ function renderTeamPerformanceList(taskMetrics) {
   return `
     <div class="team-performance-list">
       ${members
-        .map(
-          (member) => `
+      .map(
+        (member) => `
             <article class="team-performance-card">
               <div class="team-performance-head">
                 <div class="team-performance-identity">
@@ -3406,8 +3396,8 @@ function renderTeamPerformanceList(taskMetrics) {
               <p class="inline-note">Ultima actividad: ${member.last_activity ? timeAgo(member.last_activity) : 'sin movimientos todavia'}.</p>
             </article>
           `
-        )
-        .join('')}
+      )
+      .join('')}
     </div>
   `;
 }
@@ -3432,8 +3422,8 @@ function renderClientsTable(clients) {
         </thead>
         <tbody>
           ${clients
-            .map(
-              (client) => `
+      .map(
+        (client) => `
                 <tr>
                   <td>${escapeHtml(client.company || client.full_name)}</td>
                   <td>${escapeHtml(client.email)}</td>
@@ -3447,8 +3437,8 @@ function renderClientsTable(clients) {
                   </td>
                 </tr>
               `
-            )
-            .join('')}
+      )
+      .join('')}
         </tbody>
       </table>
     </div>
@@ -3459,15 +3449,15 @@ function renderAdminClientInfoRows(rows) {
   return `
     <div class="admin-client-info-list">
       ${rows
-        .map(
-          (row) => `
+      .map(
+        (row) => `
             <div class="admin-client-info-row">
               <span>${escapeHtml(row.label)}</span>
               <strong>${escapeHtml(row.value || '-')}</strong>
             </div>
           `
-        )
-        .join('')}
+      )
+      .join('')}
     </div>
   `;
 }
@@ -3480,8 +3470,8 @@ function renderAdminClientTimeline(items) {
   return `
     <div class="admin-client-timeline">
       ${items
-        .map(
-          (item) => `
+      .map(
+        (item) => `
             <div class="admin-client-timeline-item">
               <div class="admin-client-timeline-dot"></div>
               <div>
@@ -3491,8 +3481,8 @@ function renderAdminClientTimeline(items) {
               </div>
             </div>
           `
-        )
-        .join('')}
+      )
+      .join('')}
     </div>
   `;
 }
@@ -3532,24 +3522,23 @@ function renderAdminClientQuotePanel(detail) {
       <div class="admin-client-pill-row">
         ${extras.length ? extras.map((item) => `<span class="service-tag">${escapeHtml(item)}</span>`).join('') : '<span class="service-tag">Sin extras</span>'}
       </div>
-      ${
-        breakdown.length
-          ? `
+      ${breakdown.length
+      ? `
             <div class="admin-client-breakdown">
               ${breakdown
-                .map(
-                  (row) => `
+        .map(
+          (row) => `
                     <div class="admin-client-breakdown-row">
                       <span>${escapeHtml(row.label || 'Concepto')}</span>
                       <strong>${formatCurrency(row.value)}</strong>
                     </div>
                   `
-                )
-                .join('')}
+        )
+        .join('')}
             </div>
           `
-          : ''
-      }
+      : ''
+    }
     </div>
   `;
 }
@@ -3594,15 +3583,14 @@ function renderAdminClientProjectPanel(detail) {
     <div class="admin-client-milestones">
       ${(detail.activeMilestones || []).length ? detail.activeMilestones.map(renderMilestone).join('') : renderEmptyState('Todavía no hay hitos registrados.')}
     </div>
-    ${
-      moreProjects.length
-        ? `
+    ${moreProjects.length
+      ? `
           <div class="admin-client-secondary-projects">
             <h4>Otros proyectos</h4>
             <div class="list-stack">
               ${moreProjects
-                .map(
-                  (item) => `
+        .map(
+          (item) => `
                     <div class="list-item">
                       <div>
                         <strong>${escapeHtml(item.title)}</strong>
@@ -3611,12 +3599,12 @@ function renderAdminClientProjectPanel(detail) {
                       <span class="badge ${badgeClassForProject(item.status)}">${item.progress_percent}%</span>
                     </div>
                   `
-                )
-                .join('')}
+        )
+        .join('')}
             </div>
           </div>
         `
-        : ''
+      : ''
     }
   `;
 }
@@ -3677,36 +3665,35 @@ function renderAdminClientDetailModal(detail) {
             <h3 class="table-title">Datos generales del cliente</h3>
           </div>
           ${renderAdminClientInfoRows([
-            { label: 'Nombre', value: client.full_name || 'Sin nombre' },
-            { label: 'Empresa', value: client.company || 'Sin empresa' },
-            { label: 'Email', value: client.email || 'Sin correo' },
-            { label: 'Red social', value: client.website || 'No registrada' },
-            { label: 'Teléfono', value: client.phone || 'No registrado' },
-            { label: 'Creado', value: client.created_at ? formatDate(client.created_at) : 'Sin fecha' },
-          ])}
+    { label: 'Nombre', value: client.full_name || 'Sin nombre' },
+    { label: 'Empresa', value: client.company || 'Sin empresa' },
+    { label: 'Email', value: client.email || 'Sin correo' },
+    { label: 'Red social', value: client.website || 'No registrada' },
+    { label: 'Teléfono', value: client.phone || 'No registrado' },
+    { label: 'Creado', value: client.created_at ? formatDate(client.created_at) : 'Sin fecha' },
+  ])}
         </div>
 
         <div class="table-card admin-client-panel-card">
           <div class="section-row">
             <h3 class="table-title">Estado actual del lead</h3>
           </div>
-          ${
-            lead
-              ? `
+          ${lead
+      ? `
                 <div class="admin-client-state-card">
                   <span class="badge ${badgeClassForLead(lead.status)}">${escapeHtml(statusLabel(lead.status))}</span>
                   <p>${escapeHtml(serviceLabel(lead.service_type))} · ${escapeHtml(capitalize(lead.source || 'website'))}</p>
                   <div class="admin-client-copy">${escapeHtml(leadNextAction(lead))}</div>
                 </div>
                 ${renderAdminClientInfoRows([
-                  { label: 'Servicio solicitado', value: serviceLabel(lead.service_type) },
-                  { label: 'Empresa del lead', value: lead.company || client.company || 'Sin empresa' },
-                  { label: 'Red social declarada', value: lead.website || client.website || 'No registrada' },
-                  { label: 'Enviado', value: lead.created_at ? formatDateTime(lead.created_at) : 'Sin fecha' },
-                ])}
+        { label: 'Servicio solicitado', value: serviceLabel(lead.service_type) },
+        { label: 'Empresa del lead', value: lead.company || client.company || 'Sin empresa' },
+        { label: 'Red social declarada', value: lead.website || client.website || 'No registrada' },
+        { label: 'Enviado', value: lead.created_at ? formatDateTime(lead.created_at) : 'Sin fecha' },
+      ])}
               `
-              : renderEmptyState('Todavía no hay un lead asociado a este cliente.')
-          }
+      : renderEmptyState('Todavía no hay un lead asociado a este cliente.')
+    }
         </div>
       </div>
 
@@ -3715,21 +3702,20 @@ function renderAdminClientDetailModal(detail) {
           <div class="section-row">
             <h3 class="table-title">Respuestas del formulario</h3>
           </div>
-          ${
-            lead
-              ? `
+          ${lead
+      ? `
                 <div class="admin-client-copy">${escapeHtml(lead.message || 'Sin mensaje registrado en el formulario.')}</div>
                 <div class="admin-client-form-block">
                   ${diagnostic ? renderAdminClientInfoRows([
-                    { label: 'Etapa del negocio', value: capitalize(diagnostic.business_stage || 'Sin definir') },
-                    { label: 'Necesidad principal', value: diagnostic.primary_need || 'Sin detalle' },
-                    { label: 'Objetivo', value: diagnostic.goal || 'Sin detalle' },
-                    { label: 'Resumen', value: diagnostic.business_summary || 'Sin resumen' },
-                  ]) : '<div class="empty-state">Todavía no hay diagnóstico completado por el cliente.</div>'}
+        { label: 'Etapa del negocio', value: capitalize(diagnostic.business_stage || 'Sin definir') },
+        { label: 'Necesidad principal', value: diagnostic.primary_need || 'Sin detalle' },
+        { label: 'Objetivo', value: diagnostic.goal || 'Sin detalle' },
+        { label: 'Resumen', value: diagnostic.business_summary || 'Sin resumen' },
+      ]) : '<div class="empty-state">Todavía no hay diagnóstico completado por el cliente.</div>'}
                 </div>
               `
-              : renderEmptyState('Este cliente aún no ha dejado respuestas en el formulario comercial.')
-          }
+      : renderEmptyState('Este cliente aún no ha dejado respuestas en el formulario comercial.')
+    }
         </div>
 
         <div class="table-card admin-client-panel-card">
@@ -3795,8 +3781,8 @@ function renderMeetingsTable(meetings) {
         </thead>
         <tbody>
           ${meetings
-            .map(
-              (meeting) => `
+      .map(
+        (meeting) => `
                 <tr>
                   <td>${escapeHtml(meeting.client_name || meeting.invitee_name || 'Sin nombre')}</td>
                   <td>${escapeHtml(meeting.project_title || 'Sin proyecto')}</td>
@@ -3805,8 +3791,8 @@ function renderMeetingsTable(meetings) {
                   <td><span class="badge badge-active">${escapeHtml(meeting.status)}</span></td>
                 </tr>
               `
-            )
-            .join('')}
+      )
+      .join('')}
         </tbody>
       </table>
     </div>
@@ -5126,9 +5112,9 @@ function renderProjectSpotlight(estimate) {
             <p>${escapeHtml(module.summary)}</p>
             <ul class="budget-module-list">
               ${module.bullets
-                .slice(0, 3)
-                .map((bullet) => `<li>${escapeHtml(bullet)}</li>`)
-                .join('')}
+            .slice(0, 3)
+            .map((bullet) => `<li>${escapeHtml(bullet)}</li>`)
+            .join('')}
             </ul>
             <button class="budget-option-link" type="button" onclick="openQuoteModuleDetail('${escapeAttribute(estimate.projectKey)}', '${escapeAttribute(module.key)}')">Ver detalles</button>
           </article>
