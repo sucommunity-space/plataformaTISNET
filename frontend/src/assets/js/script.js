@@ -29,7 +29,26 @@ const APP_ROUTES = {
   '/nosotros/': { view: 'about-view', mobile: 'more' },
   '/calculadora-presupuesto-web/': { view: 'pricing-view', mobile: 'more' },
   '/dashboard/': { view: 'dashboard', mobile: 'panel' },
+  '/dashboard/mi-proyecto/': { view: 'client-panel-view', clientTab: 'overview', mobile: 'panel' },
+  '/dashboard/agenda-reunion/': { view: 'client-panel-view', clientTab: 'schedule', mobile: 'schedule' },
+  '/dashboard/diagnostico/': { view: 'client-panel-view', clientTab: 'wizard', mobile: 'more' },
+  '/dashboard/historial/': { view: 'client-panel-view', clientTab: 'history', mobile: 'more' },
+  '/dashboard/configuracion/': { view: 'settings', mobile: 'more' },
+  '/dashboard/crm/': { view: 'admin-panel-view', adminTab: 'crm', mobile: 'crm' },
+  '/dashboard/proyectos/': { view: 'admin-panel-view', adminTab: 'projects', mobile: 'more' },
+  '/dashboard/clientes/': { view: 'admin-panel-view', adminTab: 'clients', mobile: 'clients' },
+  '/dashboard/calendario/': { view: 'admin-panel-view', adminTab: 'calendar', mobile: 'more' },
+  '/dashboard/reportes/': { view: 'admin-panel-view', adminTab: 'reports', mobile: 'more' },
   '/diagnostico/': { view: 'wizard-view', mobile: 'more' },
+  '/mi-proyecto/': { view: 'client-panel-view', clientTab: 'overview', mobile: 'panel' },
+  '/agenda-reunion/': { view: 'client-panel-view', clientTab: 'schedule', mobile: 'schedule' },
+  '/historial/': { view: 'client-panel-view', clientTab: 'history', mobile: 'more' },
+  '/configuracion/': { view: 'settings', mobile: 'more' },
+  '/crm/': { view: 'admin-panel-view', adminTab: 'crm', mobile: 'crm' },
+  '/proyectos/': { view: 'admin-panel-view', adminTab: 'projects', mobile: 'more' },
+  '/clientes/': { view: 'admin-panel-view', adminTab: 'clients', mobile: 'clients' },
+  '/calendario/': { view: 'admin-panel-view', adminTab: 'calendar', mobile: 'more' },
+  '/reportes/': { view: 'admin-panel-view', adminTab: 'reports', mobile: 'more' },
 };
 
 const AUTH_ROUTES = {
@@ -48,6 +67,24 @@ const VIEW_ROUTES = {
   'client-panel-view': '/dashboard/',
   'admin-panel-view': '/dashboard/',
   'wizard-view': '/diagnostico/',
+};
+
+const CLIENT_TAB_ROUTES = {
+  overview: '/dashboard/mi-proyecto/',
+  schedule: '/dashboard/agenda-reunion/',
+  wizard: '/dashboard/diagnostico/',
+  history: '/dashboard/historial/',
+  settings: '/dashboard/configuracion/',
+};
+
+const ADMIN_TAB_ROUTES = {
+  dashboard: '/dashboard/',
+  crm: '/dashboard/crm/',
+  projects: '/dashboard/proyectos/',
+  clients: '/dashboard/clientes/',
+  calendar: '/dashboard/calendario/',
+  reports: '/dashboard/reportes/',
+  settings: '/dashboard/configuracion/',
 };
 
 const PRICING_CALCULATOR = {
@@ -565,6 +602,12 @@ function getActiveViewId() {
 }
 
 function getRouteForView(viewId) {
+  if (viewId === 'client-panel-view') {
+    return CLIENT_TAB_ROUTES[state.activeClientTab] || CLIENT_TAB_ROUTES.overview;
+  }
+  if (viewId === 'admin-panel-view') {
+    return ADMIN_TAB_ROUTES[state.activeAdminTab] || ADMIN_TAB_ROUTES.dashboard;
+  }
   return VIEW_ROUTES[viewId] || '/';
 }
 
@@ -612,10 +655,33 @@ function applyRoute(pathname = window.location.pathname, options = {}) {
   if (routeConfig.mobile) {
     state.mobileNavActive = routeConfig.mobile;
   }
+  if (routeConfig.clientTab) {
+    state.activeClientTab = routeConfig.clientTab;
+  }
+  if (routeConfig.adminTab) {
+    state.activeAdminTab = routeConfig.adminTab;
+  }
 
   dom.authModal?.classList.add('hidden');
-  const dashboardView = isOperatorRole(state.session?.role) ? 'admin-panel-view' : 'client-panel-view';
-  const targetView = routeConfig.view === 'dashboard' ? dashboardView : routeConfig.view;
+  let targetView = routeConfig.view;
+  if (routeConfig.view === 'dashboard') {
+    if (isOperatorRole(state.session?.role)) {
+      state.activeAdminTab = 'dashboard';
+      targetView = 'admin-panel-view';
+    } else {
+      state.activeClientTab = 'overview';
+      targetView = 'client-panel-view';
+    }
+  }
+  if (routeConfig.view === 'settings') {
+    if (isOperatorRole(state.session?.role)) {
+      state.activeAdminTab = 'settings';
+      targetView = 'admin-panel-view';
+    } else {
+      state.activeClientTab = 'settings';
+      targetView = 'client-panel-view';
+    }
+  }
   showView(targetView, { pushRoute: false });
 
   if (!options.fromPopState) {
@@ -1182,63 +1248,40 @@ function handleMobileNavAction(action) {
       showView('client-home');
       break;
     case 'client-panel':
-      state.mobileNavActive = 'panel';
-      showView('client-panel-view');
-      setClientTab('overview');
+      applyRoute(CLIENT_TAB_ROUTES.overview);
       break;
     case 'client-schedule':
-      state.mobileNavActive = 'schedule';
-      showView('client-panel-view');
-      setClientTab('schedule');
+      applyRoute(CLIENT_TAB_ROUTES.schedule);
       break;
     case 'client-wizard':
-      state.mobileNavActive = 'more';
-      showView('wizard-view');
+      applyRoute('/diagnostico/');
       break;
     case 'client-history':
-      state.mobileNavActive = 'more';
-      showView('client-panel-view');
-      setClientTab('history');
+      applyRoute(CLIENT_TAB_ROUTES.history);
       break;
     case 'client-settings':
-      state.mobileNavActive = 'more';
-      showView('client-panel-view');
-      setClientTab('settings');
+      applyRoute(CLIENT_TAB_ROUTES.settings);
       break;
     case 'admin-dashboard':
-      state.mobileNavActive = 'dashboard';
-      showView('admin-panel-view');
-      setAdminTab('dashboard');
+      applyRoute(ADMIN_TAB_ROUTES.dashboard);
       break;
     case 'admin-crm':
-      state.mobileNavActive = 'crm';
-      showView('admin-panel-view');
-      setAdminTab('crm');
+      applyRoute(ADMIN_TAB_ROUTES.crm);
       break;
     case 'admin-clients':
-      state.mobileNavActive = 'clients';
-      showView('admin-panel-view');
-      setAdminTab('clients');
+      applyRoute(ADMIN_TAB_ROUTES.clients);
       break;
     case 'admin-projects':
-      state.mobileNavActive = 'more';
-      showView('admin-panel-view');
-      setAdminTab('projects');
+      applyRoute(ADMIN_TAB_ROUTES.projects);
       break;
     case 'admin-calendar':
-      state.mobileNavActive = 'more';
-      showView('admin-panel-view');
-      setAdminTab('calendar');
+      applyRoute(ADMIN_TAB_ROUTES.calendar);
       break;
     case 'admin-reports':
-      state.mobileNavActive = 'more';
-      showView('admin-panel-view');
-      setAdminTab('reports');
+      applyRoute(ADMIN_TAB_ROUTES.reports);
       break;
     case 'admin-settings':
-      state.mobileNavActive = 'more';
-      showView('admin-panel-view');
-      setAdminTab('settings');
+      applyRoute(ADMIN_TAB_ROUTES.settings);
       break;
     case 'logout':
       logout();
@@ -4451,11 +4494,11 @@ function showView(viewId, options = {}) {
   }
 
   if (viewId === 'client-panel-view' && state.session?.role === 'client') {
-    setClientTab(state.activeClientTab);
+    setClientTab(state.activeClientTab, null, { pushRoute: options.pushRoute !== false });
   }
 
   if (viewId === 'admin-panel-view' && isOperatorRole(state.session?.role)) {
-    setAdminTab(state.activeAdminTab);
+    setAdminTab(state.activeAdminTab, null, { pushRoute: options.pushRoute !== false });
   }
 
   if (viewId === 'pricing-view') {
@@ -4485,7 +4528,7 @@ function showView(viewId, options = {}) {
   return true;
 }
 
-function setClientTab(tab, button) {
+function setClientTab(tab, button, options = {}) {
   state.activeClientTab = tab;
   Object.entries(dom.clientTabs).forEach(([key, element]) => {
     element.classList.toggle('hidden', key !== tab);
@@ -4499,9 +4542,12 @@ function setClientTab(tab, button) {
   }
 
   syncMobileNavigation();
+  if (options.pushRoute !== false && getActiveViewId() === 'client-panel-view') {
+    writeBrowserRoute(CLIENT_TAB_ROUTES[tab] || CLIENT_TAB_ROUTES.overview);
+  }
 }
 
-function setAdminTab(tab, button) {
+function setAdminTab(tab, button, options = {}) {
   if (!canAccessAdminTab(tab)) {
     if (tab !== 'dashboard') {
       toast('Ese módulo está reservado para otro perfil.', 'warning');
@@ -4521,6 +4567,9 @@ function setAdminTab(tab, button) {
   }
 
   syncMobileNavigation();
+  if (options.pushRoute !== false && getActiveViewId() === 'admin-panel-view') {
+    writeBrowserRoute(ADMIN_TAB_ROUTES[tab] || ADMIN_TAB_ROUTES.dashboard);
+  }
 }
 
 function openModal(tab = 'login', options = {}) {
