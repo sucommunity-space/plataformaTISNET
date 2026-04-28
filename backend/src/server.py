@@ -3380,6 +3380,16 @@ def build_quote_pdf(payload, settings):
 
 
 @app.route("/")
+@app.route("/inicio/", strict_slashes=False)
+@app.route("/servicios/", strict_slashes=False)
+@app.route("/portafolio/", strict_slashes=False)
+@app.route("/contacto/", strict_slashes=False)
+@app.route("/nosotros/", strict_slashes=False)
+@app.route("/calculadora-presupuesto-web/", strict_slashes=False)
+@app.route("/login/", strict_slashes=False)
+@app.route("/registro/", strict_slashes=False)
+@app.route("/dashboard/", strict_slashes=False)
+@app.route("/diagnostico/", strict_slashes=False)
 def index():
     return send_from_directory(FRONTEND_DIR, "index.html")
 

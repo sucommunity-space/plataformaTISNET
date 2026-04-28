@@ -20,6 +20,36 @@ const state = {
 
 const dom = {};
 
+const APP_ROUTES = {
+  '/': { view: 'public-view', mobile: 'home' },
+  '/inicio/': { view: 'public-view', mobile: 'home' },
+  '/servicios/': { view: 'services-view', mobile: 'services' },
+  '/portafolio/': { view: 'portfolio-view', mobile: 'portfolio' },
+  '/contacto/': { view: 'contact-view', mobile: 'more' },
+  '/nosotros/': { view: 'about-view', mobile: 'more' },
+  '/calculadora-presupuesto-web/': { view: 'pricing-view', mobile: 'more' },
+  '/dashboard/': { view: 'dashboard', mobile: 'panel' },
+  '/diagnostico/': { view: 'wizard-view', mobile: 'more' },
+};
+
+const AUTH_ROUTES = {
+  '/login/': 'login',
+  '/registro/': 'register',
+};
+
+const VIEW_ROUTES = {
+  'public-view': '/',
+  'services-view': '/servicios/',
+  'portfolio-view': '/portafolio/',
+  'contact-view': '/contacto/',
+  'about-view': '/nosotros/',
+  'pricing-view': '/calculadora-presupuesto-web/',
+  'client-home': '/dashboard/',
+  'client-panel-view': '/dashboard/',
+  'admin-panel-view': '/dashboard/',
+  'wizard-view': '/diagnostico/',
+};
+
 const PRICING_CALCULATOR = {
   projectTypes: {
     landing: {
@@ -365,6 +395,7 @@ async function init() {
 
   await Promise.all([loadPublicContent(), syncSession()]);
   applySessionDefaults();
+  applyRoute(window.location.pathname, { replaceRoute: true });
   updatePricingCalculator();
 }
 
@@ -515,9 +546,81 @@ function bindStaticEvents() {
   document.addEventListener('submit', handleDynamicSubmit);
   document.addEventListener('keydown', handleGlobalKeydown);
   window.addEventListener('message', handleCalendlyWindowMessage);
+  window.addEventListener('popstate', handleRoutePopstate);
   window.addEventListener('resize', syncCalendlyEmbedLayout);
   window.addEventListener('resize', handleWindowResize);
   window.addEventListener('scroll', handleWindowScroll, { passive: true });
+}
+
+function normalizeAppRoute(pathname = window.location.pathname) {
+  const cleanPath = (pathname || '/').split('?')[0].split('#')[0];
+  if (!cleanPath || cleanPath === '/') {
+    return '/';
+  }
+  return `/${cleanPath.replace(/^\/+|\/+$/g, '')}/`;
+}
+
+function getActiveViewId() {
+  return document.querySelector('.view.active')?.id || 'public-view';
+}
+
+function getRouteForView(viewId) {
+  return VIEW_ROUTES[viewId] || '/';
+}
+
+function getRouteForAuthTab(tab) {
+  return tab === 'register' ? '/registro/' : '/login/';
+}
+
+function writeBrowserRoute(pathname, options = {}) {
+  if (!window.history?.pushState) {
+    return;
+  }
+
+  const nextPath = normalizeAppRoute(pathname);
+  if ((window.location.pathname || '/') === nextPath) {
+    return;
+  }
+
+  const method = options.replace ? 'replaceState' : 'pushState';
+  window.history[method]({ path: nextPath }, '', nextPath);
+}
+
+function navigateToRoute(event, pathname) {
+  event?.preventDefault();
+  applyRoute(pathname);
+}
+
+function handleRoutePopstate() {
+  applyRoute(window.location.pathname, { fromPopState: true });
+}
+
+function applyRoute(pathname = window.location.pathname, options = {}) {
+  const route = normalizeAppRoute(pathname);
+  const authTab = AUTH_ROUTES[route];
+  if (authTab) {
+    showView('public-view', { pushRoute: false });
+    openModal(authTab, { pushRoute: false });
+    if (!options.fromPopState) {
+      writeBrowserRoute(route, { replace: options.replaceRoute });
+    }
+    return;
+  }
+
+  const routeConfig = APP_ROUTES[route] || APP_ROUTES['/'];
+  const canonicalRoute = APP_ROUTES[route] ? route : '/';
+  if (routeConfig.mobile) {
+    state.mobileNavActive = routeConfig.mobile;
+  }
+
+  dom.authModal?.classList.add('hidden');
+  const dashboardView = isOperatorRole(state.session?.role) ? 'admin-panel-view' : 'client-panel-view';
+  const targetView = routeConfig.view === 'dashboard' ? dashboardView : routeConfig.view;
+  showView(targetView, { pushRoute: false });
+
+  if (!options.fromPopState) {
+    writeBrowserRoute(canonicalRoute, { replace: options.replaceRoute });
+  }
 }
 
 async function api(path, options = {}) {
@@ -4322,7 +4425,7 @@ async function logout() {
   showView('public-view');
 }
 
-function showView(viewId) {
+function showView(viewId, options = {}) {
   const protectedViews = {
     'client-home': 'client',
     'client-panel-view': 'client',
@@ -4335,9 +4438,9 @@ function showView(viewId) {
     ? requiredRole.includes(state.session?.role)
     : !requiredRole || state.session?.role === requiredRole;
   if (requiredRole && (!state.session || !hasAccess)) {
-    openModal('login');
+    openModal('login', { pushRoute: options.pushRoute !== false, replaceRoute: true });
     toast('Inicia sesión para acceder a esta sección.', 'warning');
-    return;
+    return false;
   }
 
   document.querySelectorAll('.view').forEach((view) => view.classList.remove('active'));
@@ -4376,6 +4479,10 @@ function showView(viewId) {
   }
 
   syncMobileNavigation();
+  if (options.pushRoute !== false) {
+    writeBrowserRoute(getRouteForView(viewId), { replace: options.replaceRoute });
+  }
+  return true;
 }
 
 function setClientTab(tab, button) {
@@ -4416,13 +4523,16 @@ function setAdminTab(tab, button) {
   syncMobileNavigation();
 }
 
-function openModal(tab = 'login') {
+function openModal(tab = 'login', options = {}) {
   closeMobileNavSheet();
   dom.authModal.classList.remove('hidden');
-  switchTab(tab);
+  switchTab(tab, { pushRoute: false });
+  if (options.pushRoute !== false) {
+    writeBrowserRoute(getRouteForAuthTab(tab), { replace: options.replaceRoute });
+  }
 }
 
-function switchTab(tab) {
+function switchTab(tab, options = {}) {
   const isLogin = tab === 'login';
   document.getElementById('tab-login').classList.toggle('active', isLogin);
   document.getElementById('tab-register').classList.toggle('active', !isLogin);
@@ -4431,11 +4541,17 @@ function switchTab(tab) {
   document.getElementById('modal-sub').textContent = isLogin
     ? 'Accede a tu panel y sigue navegando por todo TISNET con tu cuenta activa.'
     : 'Crea tu cuenta para activar diagnóstico, panel y agenda.';
+  if (options.pushRoute !== false && !dom.authModal.classList.contains('hidden')) {
+    writeBrowserRoute(getRouteForAuthTab(tab), { replace: options.replaceRoute });
+  }
 }
 
 function closeModalBg(event) {
   if (!event || event.target === dom.authModal) {
     dom.authModal.classList.add('hidden');
+    if (AUTH_ROUTES[normalizeAppRoute(window.location.pathname)]) {
+      writeBrowserRoute(getRouteForView(getActiveViewId()), { replace: true });
+    }
   }
 }
 
@@ -5629,6 +5745,8 @@ function escapeAttribute(value) {
 }
 
 window.showView = showView;
+window.navigateToRoute = navigateToRoute;
+window.applyRoute = applyRoute;
 window.setClientTab = setClientTab;
 window.setAdminTab = setAdminTab;
 window.openModal = openModal;

@@ -6,157 +6,157 @@
     <title>TISNET - Tecnología y Creatividad Digital</title>
     <meta name="theme-color" content="#4562f6" />
     <link rel="icon" type="image/x-icon" href="/favicon.ico?v=20260422b" />
-    <link rel="icon" type="image/png" href="img/tisnet-logo.png?v=20260422b" />
-    <link rel="apple-touch-icon" href="img/tisnet-logo.png?v=20260422b" />
+    <link rel="icon" type="image/png" href="/img/tisnet-logo.png?v=20260422b" />
+    <link rel="apple-touch-icon" href="/img/tisnet-logo.png?v=20260422b" />
     <link
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="src/assets/css/styles.css" />
+    <link rel="stylesheet" href="/src/assets/css/styles.css" />
   </head>
   <body>
     <nav id="navbar">
       <div class="nav-inner">
-        <button
+        <a
           class="nav-logo nav-logo-btn"
-          type="button"
-          onclick="showView('public-view')"
+          href="/"
+          onclick="navigateToRoute(event, '/')"
         >
           TISNET
-        </button>
+        </a>
 
         <div class="nav-links" id="nav-visitor">
-          <button
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('public-view')"
+            href="/"
+            onclick="navigateToRoute(event, '/')"
           >
             Inicio
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('services-view')"
+            href="/servicios/"
+            onclick="navigateToRoute(event, '/servicios/')"
           >
             Servicios
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('portfolio-view')"
+            href="/portafolio/"
+            onclick="navigateToRoute(event, '/portafolio/')"
           >
             Portafolio
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('contact-view')"
+            href="/contacto/"
+            onclick="navigateToRoute(event, '/contacto/')"
           >
             Contacto
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('about-view')"
+            href="/nosotros/"
+            onclick="navigateToRoute(event, '/nosotros/')"
           >
             Nosotros
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link highlight"
-            type="button"
-            onclick="openPricingCalculator()"
+            href="/calculadora-presupuesto-web/"
+            onclick="navigateToRoute(event, '/calculadora-presupuesto-web/')"
           >
             Calculadora de presupuesto web
-          </button>
+          </a>
         </div>
 
         <div class="nav-links hidden" id="nav-client">
-          <button
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('public-view')"
+            href="/"
+            onclick="navigateToRoute(event, '/')"
           >
             Inicio
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('services-view')"
+            href="/servicios/"
+            onclick="navigateToRoute(event, '/servicios/')"
           >
             Servicios
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('portfolio-view')"
+            href="/portafolio/"
+            onclick="navigateToRoute(event, '/portafolio/')"
           >
             Portafolio
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('contact-view')"
+            href="/contacto/"
+            onclick="navigateToRoute(event, '/contacto/')"
           >
             Contacto
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="showView('about-view')"
+            href="/nosotros/"
+            onclick="navigateToRoute(event, '/nosotros/')"
           >
             Nosotros
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link"
-            type="button"
-            onclick="openPricingCalculator()"
+            href="/calculadora-presupuesto-web/"
+            onclick="navigateToRoute(event, '/calculadora-presupuesto-web/')"
           >
             Calculadora de presupuesto web
-          </button>
-          <button
+          </a>
+          <a
             class="nav-link highlight"
-            type="button"
-            onclick="showView('client-panel-view')"
+            href="/dashboard/"
+            onclick="navigateToRoute(event, '/dashboard/')"
           >
             Dashboard
-          </button>
+          </a>
         </div>
 
         <div class="nav-links hidden" id="nav-admin">
-          <button
+          <a
             class="nav-link highlight"
-            type="button"
-            onclick="showView('admin-panel-view')"
+            href="/dashboard/"
+            onclick="navigateToRoute(event, '/dashboard/')"
           >
             Dashboard
-          </button>
+          </a>
         </div>
 
         <div class="nav-links hidden" id="nav-sales">
-          <button
+          <a
             class="nav-link highlight"
-            type="button"
-            onclick="showView('admin-panel-view')"
+            href="/dashboard/"
+            onclick="navigateToRoute(event, '/dashboard/')"
           >
             Panel ventas
-          </button>
+          </a>
         </div>
 
         <div class="nav-actions" id="nav-actions-visitor">
-          <button
+          <a
             class="btn btn-outline"
-            type="button"
-            onclick="openModal('login')"
+            href="/login/"
+            onclick="navigateToRoute(event, '/login/')"
           >
             Iniciar sesión
-          </button>
-          <button
+          </a>
+          <a
             class="btn btn-accent"
-            type="button"
-            onclick="openModal('register')"
+            href="/registro/"
+            onclick="navigateToRoute(event, '/registro/')"
           >
             Registrarse
-          </button>
+          </a>
         </div>
 
         <div class="nav-actions hidden" id="nav-actions-auth">
@@ -1859,7 +1859,7 @@
     <button id="wabtn" type="button" onclick="openWA()">
       <img
         class="wa-icon-image"
-        src="img/wstapicon.png?v=20260424b"
+        src="/img/wstapicon.png?v=20260424b"
         alt="TISNET en WhatsApp"
       />
       <span>💬</span>
@@ -2171,6 +2171,6 @@
 
     <div class="toast-stack" id="toast-stack"></div>
 
-    <script src="src/assets/js/script.js"></script>
+    <script src="/src/assets/js/script.js"></script>
   </body>
 </html>

@@ -1864,6 +1864,7 @@
     border: none;
     background: transparent;
     cursor: pointer;
+    text-decoration: none;
   }
 
   .portfolio-card-button {
