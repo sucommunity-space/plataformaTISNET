@@ -1933,6 +1933,7 @@ function renderClientDashboard() {
   if (clientWizardTitle) {
     clientWizardTitle.textContent = 'Diagnostico';
   }
+  syncDiagnosticFormFromDashboard();
 }
 
 function renderAdminOverview() {
@@ -4359,6 +4360,10 @@ function showView(viewId) {
     updatePricingCalculator();
   }
 
+  if (viewId === 'wizard-view') {
+    syncDiagnosticFormFromDashboard();
+  }
+
   if (viewId === 'portfolio-view') {
     window.requestAnimationFrame(() => {
       syncPortfolioProgress();
@@ -5352,9 +5357,45 @@ function handlePhoneInput(event) {
 
 function selectDiagnosticStage(button) {
   const group = document.getElementById('diagnostic-stage-group');
-  group.querySelectorAll('.radio-opt').forEach((item) => item.classList.remove('selected'));
+  group.querySelectorAll('.radio-opt').forEach((item) => {
+    item.classList.remove('selected');
+    item.setAttribute('aria-pressed', 'false');
+  });
   button.classList.add('selected');
+  button.setAttribute('aria-pressed', 'true');
   dom.diagnosticStageInput.value = button.dataset.stage || 'inicio';
+}
+
+function syncDiagnosticFormFromDashboard() {
+  if (!dom.diagnosticForm || !state.clientDashboard?.diagnostic) {
+    return;
+  }
+
+  const diagnostic = state.clientDashboard.diagnostic;
+  const summaryInput = document.getElementById('diagnostic-business-summary');
+  const needInput = document.getElementById('diagnostic-primary-need');
+  const goalInput = document.getElementById('diagnostic-goal');
+  const stage = diagnostic.business_stage || 'inicio';
+
+  if (summaryInput) {
+    summaryInput.value = diagnostic.business_summary || '';
+  }
+  if (needInput) {
+    needInput.value = diagnostic.primary_need || '';
+  }
+  if (goalInput) {
+    goalInput.value = diagnostic.goal || '';
+  }
+  if (dom.diagnosticStageInput) {
+    dom.diagnosticStageInput.value = stage;
+  }
+
+  const group = document.getElementById('diagnostic-stage-group');
+  group?.querySelectorAll('.radio-opt').forEach((item) => {
+    const isSelected = item.dataset.stage === stage;
+    item.classList.toggle('selected', isSelected);
+    item.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+  });
 }
 
 function openWA(message) {
