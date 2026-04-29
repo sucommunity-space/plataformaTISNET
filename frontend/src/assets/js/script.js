@@ -2190,7 +2190,7 @@ function renderAdminOverview() {
       <div class="action-row">
         <button class="btn btn-primary" type="submit">+ Nuevo lead</button>
       </div>
-      <p class="inline-note" id="admin-lead-feedback">Se guardará en MySQL y aparecerá inmediatamente en el tablero.</p>
+      <p class="inline-note" id="admin-lead-feedback">Se guardará en PostgreSQL y aparecerá inmediatamente en el tablero.</p>
     </form>
 
     ${renderLeadBoard(data.leads)}
@@ -2494,6 +2494,13 @@ function renderAdminOverview() {
       </div>
       <p class="inline-note" id="admin-settings-feedback">Este formulario actualiza la configuración consumida por el frontend y el backend.</p>
     </form>
+    <div class="admin-danger-zone">
+      <div>
+        <h3>Limpiar datos de prueba</h3>
+        <p>Elimina clientes, leads, proyectos, reuniones, cotizaciones, tareas e historial operativo. Conserva las cuentas de administrador y ventas.</p>
+      </div>
+      <button class="btn btn-danger" type="button" onclick="resetOperationalData()">Limpiar datos operativos</button>
+    </div>
   `;
 
   if (!isAdminPanel) {
@@ -3024,7 +3031,7 @@ function renderLeadAutomationPanel(leads) {
           <span class="insight-badge neutral">Workflow</span>
         </div>
         <div class="automation-steps">
-          <div class="automation-step">1. Formulario o calculadora registra el lead en MySQL.</div>
+          <div class="automation-step">1. Formulario o calculadora registra el lead en PostgreSQL.</div>
           <div class="automation-step">2. Se habilita el pase directo a Calendly y WhatsApp.</div>
           <div class="automation-step">3. El admin prioriza por urgencia, servicio y antiguedad.</div>
           <div class="automation-step">4. El cierre se mueve al dashboard y al historial del cliente.</div>
@@ -3067,6 +3074,7 @@ function renderClientsOverview(clients) {
                 <button class="btn btn-primary" type="button" onclick="openAdminClientDetail(${client.id})">Ver detalle</button>
                 <button class="btn btn-ghost" type="button" onclick="window.open('mailto:${escapeAttribute(client.email)}', '_blank')">Email</button>
                 ${client.website ? `<button class="btn btn-ghost" type="button" onclick="window.open('${escapeAttribute(client.website)}', '_blank')">Red social</button>` : ''}
+                ${isAdminRole(state.session?.role) ? `<button class="btn btn-danger" type="button" onclick="deleteAdminClient(${client.id}, ${inlineJsString(client.company || client.full_name)})">Eliminar</button>` : ''}
               </div>
             </article>
           `
@@ -3136,6 +3144,7 @@ function renderLeadCard(lead) {
         ${canConvert ? `<button class="btn btn-primary" type="button" onclick="convertLeadToProject(${lead.id})">Convertir</button>` : ''}
         <button class="btn btn-ghost" type="button" onclick="window.open('${escapeAttribute(mailto)}', '_blank')">Email</button>
             ${lead.website ? `<button class="btn btn-ghost" type="button" onclick="window.open('${escapeAttribute(lead.website)}', '_blank')">Red social</button>` : ''}
+        ${isAdminRole(state.session?.role) ? `<button class="btn btn-danger" type="button" onclick="deleteAdminLead(${lead.id}, ${inlineJsString(lead.company || lead.full_name)})">Eliminar</button>` : ''}
       </div>
       <div class="kc-footer">
         <span class="kc-date">${formatDate(lead.created_at)} Â· ${timeAgo(lead.created_at)}</span>
@@ -3179,7 +3188,10 @@ function renderProjectBoard(projects) {
 function renderProjectCard(project) {
   return `
     <div class="kanban-card" draggable="true" data-drag-type="project" data-id="${project.id}" data-current-status="${project.admin_status}">
-      <div class="kc-name">${escapeHtml(project.title)}</div>
+      <div class="kc-top">
+        <div class="kc-name">${escapeHtml(project.title)}</div>
+        ${isAdminRole(state.session?.role) ? `<button class="icon-danger-btn" type="button" onclick="deleteAdminProject(${project.id}, ${inlineJsString(project.title)})">Eliminar</button>` : ''}
+      </div>
       <div class="kc-service">${escapeHtml(project.client_company || project.client_name || 'Cliente sin empresa')} · ${project.progress_percent}%</div>
       <div class="kc-footer">
         <span class="kc-date">${formatDate(project.due_date)}</span>
@@ -3305,6 +3317,7 @@ function renderTaskCard(task) {
         <div class="kc-name">${escapeHtml(task.title)}</div>
         <span class="lead-priority lead-priority-${escapeAttribute(task.priority || 'medium')}">${escapeHtml(taskPriorityLabel(task.priority))}</span>
       </div>
+      ${isAdminRole(state.session?.role) ? `<button class="btn btn-danger task-delete-btn" type="button" onclick="deleteAdminTask(${task.id}, ${inlineJsString(task.title)})">Eliminar tarea</button>` : ''}
       <div class="kc-service">${escapeHtml(task.project_title || 'Proyecto sin nombre')} · ${escapeHtml(serviceLabel(task.project_service_type || 'consulting'))}</div>
       <div class="kc-message">${escapeHtml((task.description || 'Sin descripcion adicional.').slice(0, 140))}</div>
       <div class="task-card-meta">
@@ -3433,6 +3446,7 @@ function renderClientsTable(clients) {
                   <td>
                     <div class="data-table-actions">
                       <button class="btn btn-ghost" type="button" onclick="openAdminClientDetail(${client.id})">Ver detalle</button>
+                      ${isAdminRole(state.session?.role) ? `<button class="btn btn-danger" type="button" onclick="deleteAdminClient(${client.id}, ${inlineJsString(client.company || client.full_name)})">Eliminar</button>` : ''}
                     </div>
                   </td>
                 </tr>
@@ -3637,6 +3651,7 @@ function renderAdminClientDetailModal(detail) {
           <span class="badge ${lead ? badgeClassForLead(lead.status) : 'badge-active'}">${escapeHtml(leadState)}</span>
           <button class="btn btn-ghost" type="button" onclick="window.open('mailto:${escapeAttribute(client.email || '')}', '_blank')">Email</button>
           ${client.website ? `<button class="btn btn-ghost" type="button" onclick="window.open('${escapeAttribute(client.website)}', '_blank')">Red social</button>` : ''}
+          ${isAdminRole(state.session?.role) ? `<button class="btn btn-danger" type="button" onclick="deleteAdminClient(${client.id}, ${inlineJsString(client.company || client.full_name || 'Cliente')})">Eliminar cliente</button>` : ''}
         </div>
       </section>
 
@@ -3788,7 +3803,7 @@ function renderMeetingsTable(meetings) {
                   <td>${escapeHtml(meeting.project_title || 'Sin proyecto')}</td>
                   <td>${escapeHtml(meeting.meeting_type)}</td>
                   <td>${meeting.scheduled_for ? formatDateTime(meeting.scheduled_for) : 'Por confirmar'}</td>
-                  <td><span class="badge badge-active">${escapeHtml(meeting.status)}</span></td>
+                  <td><span class="badge badge-active">${escapeHtml(meetingStatusLabel(meeting.status))}</span></td>
                 </tr>
               `
       )
@@ -4019,6 +4034,106 @@ async function convertLeadToProject(leadId) {
     toast(`${response.message || 'Lead convertido a proyecto.'}${extraMessage}`, 'success');
     await loadAdminOverview();
     setAdminTab(isAdminRole(state.session?.role) ? 'projects' : 'crm');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function deleteAdminProject(projectId, title = 'este proyecto') {
+  if (!isAdminRole(state.session?.role)) {
+    toast('Solo el administrador puede eliminar proyectos.', 'warning');
+    return;
+  }
+  if (!window.confirm(`Eliminar ${title}? Tambien se borraran tareas, hitos, documentos e historial asociado.`)) {
+    return;
+  }
+
+  try {
+    await api(`/api/admin/projects/${projectId}`, { method: 'DELETE' });
+    toast('Proyecto eliminado.', 'success');
+    await loadAdminOverview();
+    setAdminTab('projects');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function deleteAdminClient(clientId, name = 'este cliente') {
+  if (!isAdminRole(state.session?.role)) {
+    toast('Solo el administrador puede eliminar clientes.', 'warning');
+    return;
+  }
+  if (!window.confirm(`Eliminar ${name}? Se borrara su cuenta de cliente y sus datos operativos asociados.`)) {
+    return;
+  }
+
+  try {
+    await api(`/api/admin/clients/${clientId}`, { method: 'DELETE' });
+    closeAdminClientDetail();
+    toast('Cliente eliminado.', 'success');
+    await loadAdminOverview();
+    setAdminTab('clients');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function deleteAdminLead(leadId, name = 'este lead') {
+  if (!isAdminRole(state.session?.role)) {
+    toast('Solo el administrador puede eliminar leads.', 'warning');
+    return;
+  }
+  if (!window.confirm(`Eliminar ${name}? Esta accion quitara el lead del CRM.`)) {
+    return;
+  }
+
+  try {
+    await api(`/api/admin/leads/${leadId}`, { method: 'DELETE' });
+    toast('Lead eliminado.', 'success');
+    await loadAdminOverview();
+    setAdminTab('crm');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function deleteAdminTask(taskId, title = 'esta tarea') {
+  if (!isAdminRole(state.session?.role)) {
+    toast('Solo el administrador puede eliminar tareas.', 'warning');
+    return;
+  }
+  if (!window.confirm(`Eliminar ${title}?`)) {
+    return;
+  }
+
+  try {
+    await api(`/api/admin/tasks/${taskId}`, { method: 'DELETE' });
+    toast('Tarea eliminada.', 'success');
+    await loadAdminOverview();
+    setAdminTab('projects');
+  } catch (error) {
+    toast(error.message, 'error');
+  }
+}
+
+async function resetOperationalData() {
+  if (!isAdminRole(state.session?.role)) {
+    toast('Solo el administrador puede limpiar datos operativos.', 'warning');
+    return;
+  }
+
+  const approved = window.confirm(
+    'Esto dejara el panel en cero: clientes, leads, proyectos, reuniones, cotizaciones, tareas e historial operativo se borraran. Se conservaran admin y ventas. ¿Continuar?'
+  );
+  if (!approved) {
+    return;
+  }
+
+  try {
+    await api('/api/admin/system/reset-operational-data', { method: 'POST' });
+    toast('Datos operativos limpiados. El panel quedo listo para entrega.', 'success');
+    await loadAdminOverview();
+    setAdminTab('dashboard');
   } catch (error) {
     toast(error.message, 'error');
   }
@@ -5629,6 +5744,17 @@ function feedbackStatusLabel(status) {
   return labels[status] || capitalize(String(status || '').replaceAll('_', ' '));
 }
 
+function meetingStatusLabel(status) {
+  const labels = {
+    scheduled: 'Programado',
+    confirmed: 'Confirmado',
+    completed: 'Completada',
+    cancelled: 'Cancelada',
+    canceled: 'Cancelada',
+  };
+  return labels[String(status || 'scheduled').toLowerCase()] || capitalize(String(status || '').replaceAll('_', ' '));
+}
+
 function badgeClassForLead(status) {
   const classes = {
     new: 'badge-new',
@@ -5779,6 +5905,10 @@ function escapeAttribute(value) {
   return escapeHtml(value).replaceAll('`', '&#96;');
 }
 
+function inlineJsString(value) {
+  return escapeAttribute(JSON.stringify(String(value ?? '')));
+}
+
 window.showView = showView;
 window.navigateToRoute = navigateToRoute;
 window.applyRoute = applyRoute;
@@ -5799,6 +5929,11 @@ window.sendBudgetQuoteToWhatsApp = sendBudgetQuoteToWhatsApp;
 window.openAdminClientDetail = openAdminClientDetail;
 window.closeAdminClientDetail = closeAdminClientDetail;
 window.convertLeadToProject = convertLeadToProject;
+window.deleteAdminProject = deleteAdminProject;
+window.deleteAdminClient = deleteAdminClient;
+window.deleteAdminLead = deleteAdminLead;
+window.deleteAdminTask = deleteAdminTask;
+window.resetOperationalData = resetOperationalData;
 window.updateAdminTaskAssignee = updateAdminTaskAssignee;
 window.updateAdminTaskStatus = updateAdminTaskStatus;
 window.updateFeedbackRequestStatus = updateFeedbackRequestStatus;

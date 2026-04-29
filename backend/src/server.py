@@ -172,6 +172,12 @@ ENABLE_DEMO_LOGIN = os.getenv("ENABLE_DEMO_LOGIN", "false").strip().lower() in {
     "yes",
     "on",
 }
+ENABLE_SAMPLE_DATA = os.getenv("ENABLE_SAMPLE_DATA", "false").strip().lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
 OWNER_ADMIN_ACCOUNT = {
     "full_name": resolve_env_value("OWNER_ADMIN_NAME", "Administrador Principal TISNET")
     or "Administrador Principal TISNET",
@@ -249,6 +255,18 @@ def task_status_label(status):
     return labels.get(status, status.replace("_", " ").title())
 
 
+def meeting_status_label(status):
+    labels = {
+        "scheduled": "Programado",
+        "confirmed": "Confirmado",
+        "completed": "Completada",
+        "cancelled": "Cancelada",
+        "canceled": "Cancelada",
+    }
+    status = (status or "scheduled").strip().lower()
+    return labels.get(status, status.replace("_", " ").title())
+
+
 def safe_json_dumps(payload):
     return json.dumps(payload, ensure_ascii=False, default=str)
 
@@ -312,6 +330,14 @@ def execute_write(query, params=()):
             inserted_id = row[0] if row else None
         connection.commit()
         return inserted_id
+
+
+def execute_rowcount(query, params=()):
+    with db_cursor() as (connection, cursor):
+        cursor.execute(query, params)
+        affected = cursor.rowcount
+        connection.commit()
+        return affected
 
 
 def execute_many(query, param_list):
@@ -1146,10 +1172,12 @@ def seed_defaults(connection):
 
     seed_portfolio(connection)
     seed_showcase_clients(connection)
-    seed_leads(connection)
-    seed_projects(connection, client_role_id, admin_role_id)
     seed_team_members(connection)
-    seed_project_tasks(connection)
+
+    if ENABLE_SAMPLE_DATA:
+        seed_leads(connection)
+        seed_projects(connection, client_role_id, admin_role_id)
+        seed_project_tasks(connection)
 
 
 register_seed_callback(seed_defaults)
@@ -2457,7 +2485,7 @@ def build_client_interaction_history(leads, quotes, meetings, project_history_ro
             {
                 "kind": "meeting",
                 "title": "Reunion agendada",
-                "detail": f"{meeting.get('meeting_type') or 'Reunion'} - {meeting.get('status') or 'scheduled'}",
+                "detail": f"{meeting.get('meeting_type') or 'Reunion'} - {meeting_status_label(meeting.get('status'))}",
                 "created_at": meeting.get("created_at"),
             }
         )
@@ -2923,7 +2951,7 @@ def admin_overview_payload():
     task_metrics = performance_metrics_payload()
 
     conversion_rate = round((won_leads / total_leads) * 100, 1) if total_leads else 0
-    nps_reference = min(96, 72 + completed_projects * 5)
+    nps_reference = min(96, 72 + completed_projects * 5) if completed_projects else 0
 
     recent_leads = fetch_all(
         """
@@ -3021,8 +3049,7 @@ def admin_overview_payload():
         JOIN roles ON users.role_id = roles.id AND roles.code = 'client'
         LEFT JOIN projects ON projects.client_user_id = users.id
         GROUP BY users.id, users.full_name, users.email, users.company, users.website, users.created_at
-        HAVING COUNT(projects.id) > 0
-        ORDER BY last_update DESC, users.created_at DESC
+        ORDER BY COALESCE(MAX(projects.updated_at), users.created_at) DESC, users.created_at DESC
         """
     )
     meetings = fetch_all(
@@ -3095,6 +3122,77 @@ def admin_overview_payload():
         "settings": get_site_settings(),
         "serviceOptions": [{"value": key, "label": value} for key, value in SERVICE_LABELS.items()],
     }
+
+
+def reset_operational_data():
+    """Remove test/business data while keeping owner accounts and public content."""
+    deleted = {}
+    with db_cursor() as (connection, cursor):
+        cleanup_steps = [
+            ("meetings", "DELETE FROM meetings"),
+            ("email_logs", "DELETE FROM email_logs"),
+            ("budget_quotes", "DELETE FROM budget_quotes"),
+            ("diagnostics", "DELETE FROM diagnostics"),
+            ("leads", "DELETE FROM leads"),
+            ("projects", "DELETE FROM projects"),
+        ]
+        for key, query in cleanup_steps:
+            cursor.execute(query)
+            deleted[key] = cursor.rowcount
+
+        cursor.execute(
+            """
+            DELETE FROM users
+            USING roles
+            WHERE users.role_id = roles.id
+              AND roles.code = 'client'
+            """
+        )
+        deleted["client_users"] = cursor.rowcount
+        connection.commit()
+    return deleted
+
+
+def delete_client_account(client_id):
+    deleted = {}
+    with db_cursor() as (connection, cursor):
+        cursor.execute(
+            """
+            SELECT users.id, users.email
+            FROM users
+            JOIN roles ON users.role_id = roles.id
+            WHERE users.id = %s AND roles.code = 'client'
+            """,
+            (client_id,),
+        )
+        client = cursor.fetchone()
+        if not client:
+            return None
+
+        client_email = client[1]
+        cleanup_steps = [
+            ("meetings", "DELETE FROM meetings WHERE user_id = %s OR LOWER(invitee_email) = LOWER(%s)"),
+            ("budget_quotes", "DELETE FROM budget_quotes WHERE user_id = %s OR LOWER(client_email) = LOWER(%s)"),
+            ("diagnostics", "DELETE FROM diagnostics WHERE user_id = %s"),
+            ("leads", "DELETE FROM leads WHERE LOWER(email) = LOWER(%s)"),
+        ]
+
+        cursor.execute("DELETE FROM projects WHERE client_user_id = %s", (client_id,))
+        deleted["projects"] = cursor.rowcount
+
+        cursor.execute(cleanup_steps[0][1], (client_id, client_email))
+        deleted[cleanup_steps[0][0]] = cursor.rowcount
+        cursor.execute(cleanup_steps[1][1], (client_id, client_email))
+        deleted[cleanup_steps[1][0]] = cursor.rowcount
+        cursor.execute(cleanup_steps[2][1], (client_id,))
+        deleted[cleanup_steps[2][0]] = cursor.rowcount
+        cursor.execute(cleanup_steps[3][1], (client_email,))
+        deleted[cleanup_steps[3][0]] = cursor.rowcount
+
+        cursor.execute("DELETE FROM users WHERE id = %s", (client_id,))
+        deleted["client_users"] = cursor.rowcount
+        connection.commit()
+    return deleted
 
 
 def parse_calendly_payload(payload):
@@ -3991,6 +4089,18 @@ def admin_overview(user):
     return api_response(True, **admin_overview_payload(), user=user)
 
 
+@app.route("/api/admin/system/reset-operational-data", methods=["POST"])
+@require_auth("admin")
+def admin_reset_operational_data(user):
+    require_database()
+    deleted = reset_operational_data()
+    return api_response(
+        True,
+        "Datos de prueba eliminados. Se conservaron las cuentas de administrador y ventas.",
+        deleted=deleted,
+    )
+
+
 @app.route("/api/admin/clients/<int:client_id>")
 @require_auth(("admin", "sales"))
 def admin_client_detail(user, client_id):
@@ -3999,6 +4109,16 @@ def admin_client_detail(user, client_id):
     if not detail:
         return api_response(False, "No encontramos el cliente solicitado."), 404
     return api_response(True, client=detail)
+
+
+@app.route("/api/admin/clients/<int:client_id>", methods=["DELETE"])
+@require_auth("admin")
+def admin_delete_client(user, client_id):
+    require_database()
+    deleted = delete_client_account(client_id)
+    if deleted is None:
+        return api_response(False, "No encontramos un cliente con ese ID."), 404
+    return api_response(True, "Cliente y datos asociados eliminados.", deleted=deleted)
 
 
 @app.route("/api/admin/leads", methods=["POST"])
@@ -4028,6 +4148,21 @@ def admin_update_lead(user, lead_id):
         (lead_id,),
     )
     return api_response(True, "Lead actualizado.", lead=lead)
+
+
+@app.route("/api/admin/leads/<int:lead_id>", methods=["DELETE"])
+@require_auth("admin")
+def admin_delete_lead(user, lead_id):
+    require_database()
+    lead = fetch_one("SELECT id FROM leads WHERE id = %s", (lead_id,))
+    if not lead:
+        return api_response(False, "No encontramos el lead solicitado."), 404
+
+    execute_rowcount("DELETE FROM meetings WHERE lead_id = %s", (lead_id,))
+    execute_rowcount("DELETE FROM budget_quotes WHERE lead_id = %s", (lead_id,))
+    execute_rowcount("DELETE FROM diagnostics WHERE lead_id = %s", (lead_id,))
+    deleted = execute_rowcount("DELETE FROM leads WHERE id = %s", (lead_id,))
+    return api_response(True, "Lead eliminado.", deleted=deleted)
 
 
 @app.route("/api/admin/leads/<int:lead_id>/convert", methods=["POST"])
@@ -4140,6 +4275,19 @@ def admin_update_project(user, project_id):
         (project_id,),
     )
     return api_response(True, "Proyecto actualizado.", project=project)
+
+
+@app.route("/api/admin/projects/<int:project_id>", methods=["DELETE"])
+@require_auth("admin")
+def admin_delete_project(user, project_id):
+    require_database()
+    project = fetch_one("SELECT id, title FROM projects WHERE id = %s", (project_id,))
+    if not project:
+        return api_response(False, "No encontramos el proyecto solicitado."), 404
+
+    execute_rowcount("DELETE FROM meetings WHERE project_id = %s", (project_id,))
+    deleted = execute_rowcount("DELETE FROM projects WHERE id = %s", (project_id,))
+    return api_response(True, "Proyecto eliminado.", deleted=deleted)
 
 
 @app.route("/api/admin/project-documents", methods=["POST"])
@@ -4369,6 +4517,23 @@ def admin_update_task(user, task_id):
 
     task = fetch_task_by_id(task_id)
     return api_response(True, "Tarea actualizada.", task=task)
+
+
+@app.route("/api/admin/tasks/<int:task_id>", methods=["DELETE"])
+@require_auth("admin")
+def admin_delete_task(user, task_id):
+    require_database()
+    task = fetch_task_by_id(task_id)
+    if not task:
+        return api_response(False, "No encontramos la tarea solicitada."), 404
+
+    deleted = execute_rowcount("DELETE FROM project_tasks WHERE id = %s", (task_id,))
+    add_project_history(
+        task["project_id"],
+        f"Tarea eliminada: {task['title']}",
+        "El administrador retiro esta tarea del tablero.",
+    )
+    return api_response(True, "Tarea eliminada.", deleted=deleted)
 
 
 @app.route("/api/admin/settings", methods=["PUT"])

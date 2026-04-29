@@ -19,6 +19,8 @@ services:
         value: "false"
       - key: ENABLE_DEMO_LOGIN
         value: "false"
+      - key: ENABLE_SAMPLE_DATA
+        value: "false"
       - key: FLASK_SECRET_KEY
         generateValue: true
       - key: OWNER_ADMIN_NAME
