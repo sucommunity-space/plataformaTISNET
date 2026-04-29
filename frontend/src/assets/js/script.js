@@ -374,7 +374,7 @@ const PRICING_CALCULATOR = {
 // Para editar o agregar integrantes, modifica este arreglo.
 const TEAM_EXPERTS = [
   {
-    name: 'Fernando',
+    name: 'Fernanda',
     role: 'Estrategia y dirección comercial',
     bio: 'Define el enfoque del proyecto, ordena las prioridades y asegura que cada decisión esté alineada con los objetivos del negocio.',
     focus: ['Estrategia comercial', 'Planificación', 'Visión de crecimiento'],
