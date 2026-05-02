@@ -1871,6 +1871,29 @@
     .portfolio-grid { grid-template-columns: 1fr; }
     .hero-stats { gap: 24px; }
     .metrics-row { grid-template-columns: 1fr; }
+    .form-row { flex-direction: column; gap: 12px; }
+    .action-row { flex-direction: column; gap: 10px; }
+    .action-row .btn { width: 100%; justify-content: center; }
+    .btn { padding: 12px 20px; font-size: 0.85rem; }
+    .hero-actions { flex-direction: column; gap: 12px; }
+    .hero-actions .btn { width: 100%; }
+    .section { padding: 48px 0; }
+    .container { padding: 0 16px; }
+    .footer-grid { grid-template-columns: 1fr; gap: 24px; }
+    .admin-metrics { grid-template-columns: 1fr; }
+    .kanban-board { grid-template-columns: 1fr; }
+    .data-table { font-size: 0.8rem; }
+    .data-table th, .data-table td { padding: 8px 6px; }
+    .modal { padding: 20px 16px; }
+    .modal-wide { max-width: 100%; }
+    .quote-summary-row { flex-direction: column; gap: 8px; }
+    .quote-summary-label, .quote-summary-value { width: 100%; }
+    .wizard-options { flex-direction: column; }
+    .wizard-option { width: 100%; }
+    .schedule-switch { flex-direction: column; }
+    .client-panel-tabs { flex-direction: column; gap: 4px; }
+    .client-panel-tab { width: 100%; text-align: center; }
+  }
     .admin-task-metric-grid,
     .admin-task-metric-grid.compact,
     .team-performance-list { grid-template-columns: 1fr; }
@@ -2325,6 +2348,7 @@
   .data-table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 500px;
   }
 
   .data-table th,
@@ -2333,6 +2357,7 @@
     text-align: left;
     border-bottom: 1px solid var(--border);
     font-size: .875rem;
+    white-space: nowrap;
   }
 
   .data-table th {
@@ -4738,11 +4763,81 @@
     }
   }
 
-  @media (max-width: 480px) {
+@media (max-width: 480px) {
     #hero {
       padding-top: 124px;
       padding-bottom: 52px;
     }
+
+    #client-panel,
+    #admin-panel {
+      padding-top: 88px;
+    }
+
+    .section {
+      padding: 56px 0;
+    }
+
+    .hero-title {
+      font-size: clamp(1.75rem, 8vw, 2.25rem);
+    }
+
+    .hero-desc {
+      font-size: .92rem;
+      line-height: 1.65;
+    }
+
+    .hero-stats {
+      grid-template-columns: 1fr;
+      max-width: none;
+      gap: 16px;
+    }
+
+    .hero-stats .stat-item:last-child {
+      grid-column: auto;
+    }
+
+    .stat-num { font-size: 1.5rem; }
+    .stat-label { font-size: 0.75rem; }
+
+    .data-table {
+      min-width: 520px;
+    }
+
+    .table-wrap {
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .footer-newsletter-shell { padding: 20px; }
+    .footer-subscribe-grid { flex-direction: column; gap: 12px; }
+    .footer-subscribe-grid input { width: 100%; }
+    .footer-newsletter-shell .action-row { flex-direction: column; }
+    .footer-newsletter-shell .btn { width: 100%; justify-content: center; }
+
+    .portfolio-card { min-height: 160px; }
+    .portfolio-name { font-size: 0.9rem; }
+    .portfolio-summary { font-size: 0.75rem; -webkit-line-clamp: 2; }
+
+    .pricing-calc-shell { padding: 16px; }
+    .pricing-calc-option { padding: 12px; }
+    .pricing-feature-checkbox { flex-direction: column; align-items: flex-start; gap: 8px; }
+
+    .client-home-hero h1 { font-size: 1.75rem; }
+    .client-home-hero p { font-size: 0.9rem; }
+
+    .admin-panel-hero h1 { font-size: 1.5rem; }
+    .admin-metrics { gap: 12px; }
+    .admin-metric-card { padding: 16px; }
+
+    .form-input, .form-select, .textarea-input {
+      font-size: 0.9rem;
+      padding: 10px 12px;
+    }
+
+    .section-title { font-size: 1.5rem; }
+    .section-desc { font-size: 0.9rem; }
+    .section-label { font-size: 0.75rem; }
+  }
 
     #client-panel,
     #admin-panel {
